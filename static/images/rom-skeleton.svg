@@ -1,0 +1,28 @@
+<svg width="320" height="200" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="320" height="200" fill="#f0f0f0" rx="8" ry="8" />
+  
+  <!-- Image placeholder -->
+  <rect x="20" y="20" width="280" height="100" rx="4" ry="4" fill="#e0e0e0">
+    <animate attributeName="opacity" values="0.5;0.7;0.5" dur="1.5s" repeatCount="indefinite" />
+  </rect>
+  
+  <!-- Title placeholder -->
+  <rect x="20" y="130" width="240" height="16" rx="4" ry="4" fill="#e0e0e0">
+    <animate attributeName="opacity" values="0.5;0.7;0.5" dur="1.8s" repeatCount="indefinite" />
+  </rect>
+  
+  <!-- Author placeholder -->
+  <rect x="20" y="155" width="140" height="12" rx="4" ry="4" fill="#e0e0e0">
+    <animate attributeName="opacity" values="0.5;0.7;0.5" dur="2s" repeatCount="indefinite" />
+  </rect>
+  
+  <!-- Details placeholder -->
+  <rect x="20" y="175" width="90" height="10" rx="4" ry="4" fill="#e0e0e0">
+    <animate attributeName="opacity" values="0.5;0.7;0.5" dur="1.7s" repeatCount="indefinite" />
+  </rect>
+  
+  <rect x="120" y="175" width="90" height="10" rx="4" ry="4" fill="#e0e0e0">
+    <animate attributeName="opacity" values="0.5;0.7;0.5" dur="2.1s" repeatCount="indefinite" />
+  </rect>
+</svg> 
