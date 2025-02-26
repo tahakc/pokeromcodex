@@ -2,6 +2,19 @@ import { getRomBySlug, nameToSlug } from '$lib/services/rom-service';
 import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
+async function fetchImageAsBase64(url: string): Promise<string> {
+  try {
+    const response = await fetch(url);
+    const arrayBuffer = await response.blob();
+    const base64 = Buffer.from(await arrayBuffer.arrayBuffer()).toString('base64');
+    const mimeType = response.headers.get('content-type') || 'image/jpeg';
+    return `data:${mimeType};base64,${base64}`;
+  } catch (err) {
+    console.error('Error fetching image:', err);
+    return '';
+  }
+}
+
 export const GET: RequestHandler = async ({ params, url }) => {
   const { slug } = params;
   
@@ -12,12 +25,14 @@ export const GET: RequestHandler = async ({ params, url }) => {
       throw error(404, 'ROM not found');
     }
     
+    
+    const imageData = rom.image ? await fetchImageAsBase64(rom.image) : '';
+    
     const bgColor = getBgColor(rom);
     const bgColorLight = lightenColor(bgColor, 20);
     const bgColorDark = darkenColor(bgColor, 20);
     const textColor = getContrastingTextColor(bgColor);
     const accentColor = getAccentColor(bgColor, textColor);
-
     const badgeColor = getBadgeColor(bgColor, textColor);
     
     const title = rom.name;
@@ -97,12 +112,9 @@ export const GET: RequestHandler = async ({ params, url }) => {
         <line x1="1045" y1="100" x2="1075" y2="100" stroke="${textColor}" stroke-opacity="0.4" stroke-width="2.5" />
         <line x1="1125" y1="100" x2="1155" y2="100" stroke="${textColor}" stroke-opacity="0.4" stroke-width="2.5" />
         
-        ${rom.image ? 
+        ${imageData ? 
           `<g clip-path="url(#roundedImage)">
-            <rect x="50" y="50" width="280" height="280" fill="${darkenColor(bgColor, 10)}" />
-            <foreignObject x="50" y="50" width="280" height="280">
-              <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background-size:cover;background-position:center;background-image:url('${escapeXml(rom.image)}')"></div>
-            </foreignObject>
+            <image x="50" y="50" width="280" height="280" href="${escapeXml(imageData)}" preserveAspectRatio="xMidYMid slice" />
           </g>
           <rect x="50" y="50" width="280" height="280" rx="20" fill="none" stroke="${textColor}" stroke-opacity="0.15" stroke-width="1" filter="url(#shadow)" />` :
           `<rect x="50" y="50" width="280" height="280" rx="20" fill="${darkenColor(bgColor, 10)}" filter="url(#shadow)" />
