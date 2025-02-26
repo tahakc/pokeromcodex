@@ -44,6 +44,11 @@ function setCachedData(cacheKey: string, data: any) {
   });
 }
 
+function formatVersion(version: string): string {
+  if (!version) return '';
+  return /^\d/.test(version) ? `v${version}` : version;
+}
+
 export async function getAllRoms(page = 1, pageSize = 20): Promise<{ data: Rom[], count: number }> {
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
@@ -60,7 +65,7 @@ export async function getAllRoms(page = 1, pageSize = 20): Promise<{ data: Rom[]
 
   const formattedData = data.map(rom => ({
     ...rom,
-    version: /^\d+/.test(rom.version) ? `v${rom.version}` : rom.version
+    version: formatVersion(rom.version)
   }));
 
   if (page === 1) {
@@ -86,7 +91,10 @@ export async function getRomById(id: number): Promise<Rom | null> {
     return null;
   }
 
-  return data as Rom;
+  return {
+    ...data,
+    version: formatVersion(data.version)
+  } as Rom;
 }
 
 export async function searchRoms(
@@ -154,7 +162,10 @@ export async function searchRoms(
       return { data: [], count: 0 };
     }
     
-    let filteredData = [...data];
+    let filteredData = data.map(rom => ({
+      ...rom,
+      version: formatVersion(rom.version)
+    }));
     
     if (filters.difficulty && filters.difficulty.length > 0) {
       filteredData = filteredData.filter(rom => {
@@ -267,17 +278,20 @@ export async function getRomBySlug(slug: string): Promise<Rom | null> {
     return null;
   }
 
-  allRomsCache = data as Rom[];
+  const formattedData = data.map(rom => ({
+    ...rom,
+    version: formatVersion(rom.version)
+  }));
+
+  allRomsCache = formattedData as Rom[];
   lastFetchTime = Date.now();
 
-  const rom = data.find(rom => nameToSlug(rom.name) === slug);
+  const rom = formattedData.find(rom => nameToSlug(rom.name) === slug);
   
   if (!rom) {
     console.error(`No ROM found with slug ${slug}`);
     return null;
   }
-
-  rom.version = /^\d+/.test(rom.version) ? `v${rom.version}` : rom.version
 
   return rom as Rom;
 }
