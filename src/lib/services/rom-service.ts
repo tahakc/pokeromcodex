@@ -58,8 +58,13 @@ export async function getAllRoms(page = 1, pageSize = 20): Promise<{ data: Rom[]
     return { data: [], count: 0 };
   }
 
+  const formattedData = data.map(rom => ({
+    ...rom,
+    version: /^\d+/.test(rom.version) ? `v${rom.version}` : rom.version
+  }));
+
   if (page === 1) {
-    allRomsCache = data as Rom[];
+    allRomsCache = formattedData as Rom[];
     lastFetchTime = Date.now();
   }
 
@@ -272,7 +277,7 @@ export async function getRomBySlug(slug: string): Promise<Rom | null> {
     return null;
   }
 
-  rom.version = /^\d+(?:\.\d+)*$/.test(rom.version) ? `v${rom.version}` : rom.version
+  rom.version = /^\d+/.test(rom.version) ? `v${rom.version}` : rom.version
 
   return rom as Rom;
 }
