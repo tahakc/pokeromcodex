@@ -7,7 +7,7 @@
   import { ChevronDown } from "lucide-svelte";
   import { slide } from "svelte/transition";
   import { onMount } from "svelte";
-  import { getFilterOptions, searchRoms, nameToSlug } from "$lib/services/rom-service";
+  import { getFilterOptions, searchRoms } from "$lib/services/rom-service";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   import { browser } from "$app/environment";
@@ -78,12 +78,7 @@
       
       console.log('Search results:', { count, resultsLength: data.length });
       
-      const romsWithSlugs = data.map(rom => ({
-        ...rom,
-        slug: nameToSlug(rom.name)
-      }));
-      
-      onSearch(romsWithSlugs, count);
+      onSearch(data, count);
     } catch (error) {
       console.error('Error performing search:', error);
       onSearch([], 0);

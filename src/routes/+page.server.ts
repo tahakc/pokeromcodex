@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types';
-import { getAllRoms, nameToSlug } from '$lib/services/rom-service';
+import { getAllRoms } from '$lib/services/rom-service';
 
 export const load: PageServerLoad = async ({ url }) => {
   try {
@@ -8,13 +8,8 @@ export const load: PageServerLoad = async ({ url }) => {
     
     const { data, count } = await getAllRoms(page, pageSize);
     
-    const roms = data?.map(rom => ({
-      ...rom,
-      slug: nameToSlug(rom.name)
-    })) || [];
-    
     return {
-      roms,
+      roms: data,
       count,
       page,
       pageSize,

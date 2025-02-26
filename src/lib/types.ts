@@ -35,6 +35,7 @@ const featuresSchema = z.object({
 export const romSchema = z.object({
   id: z.number(),
   name: z.string(),
+  slug: z.string(),
   console: z.string().nullable().optional(),
   image: z.string().nullable().optional(),
   gallery: z.array(z.string()).nullable().optional(),

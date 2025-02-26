@@ -178,35 +178,25 @@ export async function searchRoms(
     
     if (filters.features && filters.features.length > 0) {
       filteredData = filteredData.filter(rom => {
-        const allFeatures = Object.values(rom.features || {}).flat();
+        const qolFeatures = rom.features?.qol || [];
         return filters.features.some(feature => 
-          allFeatures.includes(feature)
+          qolFeatures.includes(feature)
         );
       });
     }
     
-    const paginatedData = filteredData.slice(0, pageSize);
-    
-    const totalCount = count || 0;
-    const filterRatio = data.length > 0 ? filteredData.length / data.length : 1;
-    const estimatedTotalCount = Math.round(totalCount * filterRatio);
-    
-    const result = { 
-      data: paginatedData, 
-      count: estimatedTotalCount 
+    const result = {
+      data: filteredData.slice(0, pageSize) as Rom[],
+      count: count || 0
     };
     
     setCachedData(cacheKey, result);
-    
     return result;
+    
   } catch (error) {
-    console.error('Error in searchRoms:', error);
+    console.error('Error searching ROMs:', error);
     return { data: [], count: 0 };
   }
-}
-
-export function clearSearchCache(): void {
-  searchResultsCache.clear();
 }
 
 export async function getFilterOptions(): Promise<{
@@ -264,44 +254,39 @@ export async function getFilterOptions(): Promise<{
 }
 
 export async function getRomBySlug(slug: string): Promise<Rom | null> {
-  if (allRomsCache && Date.now() - lastFetchTime < CACHE_TTL) {
-    const rom = allRomsCache.find(rom => nameToSlug(rom.name) === slug);
-    if (rom) return rom;
-  }
-
   const { data, error } = await supabase
     .from(TABLE_NAME)
-    .select('*');
+    .select('*')
+    .eq('slug', slug)
+    .single();
 
-  if (error || !data) {
-    console.error(`Error fetching ROMs:`, error);
+  if (error) {
+    console.error(`Error fetching ROM with slug ${slug}:`, error);
     return null;
   }
 
-  const formattedData = data.map(rom => ({
-    ...rom,
-    version: formatVersion(rom.version)
-  }));
-
-  allRomsCache = formattedData as Rom[];
-  lastFetchTime = Date.now();
-
-  const rom = formattedData.find(rom => nameToSlug(rom.name) === slug);
-  
-  if (!rom) {
-    console.error(`No ROM found with slug ${slug}`);
-    return null;
-  }
-
-  return rom as Rom;
+  return {
+    ...data,
+    version: formatVersion(data.version)
+  } as Rom;
 }
 
-export function nameToSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-');
+export async function nameToSlug(name: string): Promise<string> {
+  const { data, error } = await supabase
+    .from(TABLE_NAME)
+    .select('slug')
+    .eq('name', name)
+    .single();
+
+  if (error || !data) {
+    console.error(`Error getting slug for name ${name}:`, error);
+    return name.toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+  }
+
+  return data.slug;
 }
 
 export function getSkeletonImageUrl(): string {

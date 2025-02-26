@@ -12,7 +12,6 @@
   import { marked } from 'marked';
   import DOMPurify from 'dompurify';
   import SeoHead from "$lib/components/seo/seo-head.svelte";
-  import { nameToSlug } from "$lib/services/rom-service";
 
   export let data;
   const rom: Rom = data.rom;
@@ -37,15 +36,12 @@
     // Only use DOMPurify in the browser, pass through on server
     return browser ? DOMPurify.sanitize(html) : html;
   }
-  
-  // Create slug for the ROM to use with OG image URLs
-  $: romWithSlug = rom ? { ...rom, slug: nameToSlug(rom.name) } : null;
 </script>
 
 <SeoHead 
   title={data.meta.title}
   description={data.meta.description}
-  rom={romWithSlug}
+  rom={rom}
 />
 
 <svelte:head>
