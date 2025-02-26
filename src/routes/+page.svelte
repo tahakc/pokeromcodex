@@ -47,6 +47,8 @@
       transition: none !important;
       position: relative;
       z-index: 1;
+      max-width: 100vw;
+      overflow-x: hidden;
     }
     body.modal-open .home-page .gradient-bg {
       transform: none !important;
@@ -58,11 +60,32 @@
     .gradient-container {
       position: relative;
       overflow: hidden;
+      width: 100%;
     }
     
     .gradient-bg {
       position: absolute;
       pointer-events: none;
+      width: 100%;
+    }
+    
+    h1, p {
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      word-break: break-word;
+      hyphens: auto;
+    }
+    
+    @media (max-width: 640px) {
+      .mx-auto {
+        max-width: 100%;
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+      
+      .gradient-bg div {
+        max-width: calc(100vw - 2rem);
+      }
     }
   </style>
 </svelte:head>

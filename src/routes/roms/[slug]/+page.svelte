@@ -1,5 +1,6 @@
 <script lang="ts">
   import { page } from "$app/stores";
+  import { browser } from "$app/environment";
   import type { Rom } from "$lib/types";
   import { Badge } from "$lib/components/ui/badge";
   import { Button } from "$lib/components/ui/button";
@@ -31,13 +32,61 @@
   
   function renderMarkdown(content: string) {
     const html = marked(content) as string;
-    return DOMPurify.sanitize(html);
+    // Only use DOMPurify in the browser, pass through on server
+    return browser ? DOMPurify.sanitize(html) : html;
   }
 </script>
 
 <svelte:head>
   <title>{data.meta.title}</title>
   <meta name="description" content={data.meta.description} />
+  <style>
+    .prose {
+      max-width: 100%;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      word-break: break-word;
+      hyphens: auto;
+    }
+    
+    .prose pre {
+      max-width: 100%;
+      overflow-x: auto;
+    }
+    
+    .prose table {
+      display: block;
+      max-width: 100%;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    
+    .prose img {
+      max-width: 100%;
+      height: auto;
+    }
+    
+    .prose p, .prose li, .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      word-break: break-word;
+    }
+    
+    .prose a {
+      word-break: break-all;
+    }
+    
+    .prose code {
+      word-break: break-all;
+      white-space: pre-wrap;
+    }
+    
+    .content-container {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+  </style>
 </svelte:head>
 
 <div class="container py-8 max-w-4xl mx-auto">
@@ -48,7 +97,7 @@
     </a>
   </div>
 
-  <div in:fade={{ duration: 300 }}>
+  <div in:fade={{ duration: 300 }} class="content-container">
     <div class="relative aspect-video w-full overflow-hidden rounded-lg bg-muted mb-8">
       {#if rom.image}
         <img
@@ -74,8 +123,8 @@
     <div class="grid gap-8 md:grid-cols-3">
       <div class="md:col-span-2 space-y-6">
         <div>
-          <h1 class="text-3xl font-bold tracking-tight md:text-4xl">{rom.name}</h1>
-          <p class="mt-2 text-lg text-muted-foreground">by {rom.author}</p>
+          <h1 class="text-3xl font-bold tracking-tight md:text-4xl break-words">{rom.name}</h1>
+          <p class="mt-2 text-lg text-muted-foreground">{rom.author ? `by ${rom.author}` : ''}</p>
         </div>
 
         <div class="flex flex-wrap gap-2">
@@ -126,7 +175,9 @@
             <h2 class="text-xl font-semibold">Description</h2>
             <div class="prose prose-sm max-w-none dark:prose-invert">
               {#each rom.content as paragraph}
-                {@html renderMarkdown(paragraph)}
+                <div>
+                  {@html renderMarkdown(paragraph)}
+                </div>
               {/each}
             </div>
           </div>
