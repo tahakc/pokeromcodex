@@ -8,6 +8,7 @@
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   import { isAnyModalOpen } from "$lib/stores/modal";
+  import SeoHead from "$lib/components/seo/seo-head.svelte";
 
   export let data;
   
@@ -39,9 +40,12 @@
   }
 </script>
 
+<SeoHead 
+  title={data.meta.title}
+  description={data.meta.description}
+/>
+
 <svelte:head>
-  <title>{data.meta.title}</title>
-  <meta name="description" content={data.meta.description} />
   <style>
     .home-page {
       transition: none !important;
