@@ -16,7 +16,7 @@ async function fetchImageAsBase64(url: string): Promise<string> {
 }
 
 export const GET: RequestHandler = async ({ params, url }) => {
-  const { slug } = params;
+  const slug = params.slug.replace(/\.png$/, '');
   
   try {
     const rom = await getRomBySlug(slug);

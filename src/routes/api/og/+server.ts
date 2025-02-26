@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types';
 
-export const GET: RequestHandler = async () => {
+export const GET: RequestHandler = async ({ url }) => {
   const svg = `
     <svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
       <defs>
