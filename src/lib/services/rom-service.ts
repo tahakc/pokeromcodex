@@ -272,7 +272,7 @@ export async function getRomBySlug(slug: string): Promise<Rom | null> {
     return null;
   }
 
-  rom.version = new RegExp('^\\d+\\.').test(rom.version) ? `v${rom.version}` : rom.version
+  rom.version = /^\d+(?:\.\d+)*$/.test(rom.version) ? `v${rom.version}` : rom.version
 
   return rom as Rom;
 }
