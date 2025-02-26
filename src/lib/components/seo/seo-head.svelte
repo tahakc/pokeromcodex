@@ -13,9 +13,7 @@
   $: ogTags = generateOgMetaTags(rom, completeUrl);
   $: jsonLd = generateJsonLd(rom, completeUrl);
   
-  $: calculatedOgImage = ogImage || (rom 
-    ? `${$page.url.origin}/api/og/${rom.slug}` 
-    : `${$page.url.origin}/api/og`);
+  $: calculatedOgImage = `${$page.url.origin}/api/og${rom ? `/${rom.slug}` : ''}`;
 </script>
 
 <svelte:head>
