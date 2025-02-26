@@ -8,6 +8,8 @@
   import { fade } from "svelte/transition";
   import { format, parse } from "date-fns";
   import { ArrowLeft, ExternalLink, Gamepad2, Star } from "lucide-svelte";
+  import { marked } from 'marked';
+  import DOMPurify from 'dompurify';
 
   export let data;
   const rom: Rom = data.rom;
@@ -21,6 +23,16 @@
   $: difficultyLevels = rom?.features?.gameplay_difficulty || [];
 
   $: qolFeatures = rom?.features?.qol || [];
+  
+  marked.setOptions({
+    breaks: true,
+    gfm: true
+  });
+  
+  function renderMarkdown(content: string) {
+    const html = marked(content) as string;
+    return DOMPurify.sanitize(html);
+  }
 </script>
 
 <svelte:head>
@@ -114,7 +126,7 @@
             <h2 class="text-xl font-semibold">Description</h2>
             <div class="prose prose-sm max-w-none dark:prose-invert">
               {#each rom.content as paragraph}
-                <p>{paragraph}</p>
+                {@html renderMarkdown(paragraph)}
               {/each}
             </div>
           </div>

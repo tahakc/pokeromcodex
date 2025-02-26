@@ -1,5 +1,6 @@
 import { fontFamily } from "tailwindcss/defaultTheme";
 import type { Config } from "tailwindcss";
+import typography from "@tailwindcss/typography";
 
 const config: Config = {
 	darkMode: ["class"],
@@ -56,9 +57,59 @@ const config: Config = {
 			},
 			fontFamily: {
 				sans: [...fontFamily.sans]
-			}
+			},
+			typography: {
+				DEFAULT: {
+					css: {
+						maxWidth: 'none',
+						color: 'inherit',
+						a: {
+							color: 'inherit',
+							textDecoration: 'none',
+							fontWeight: 'inherit',
+							'&:hover': {
+								textDecoration: 'underline',
+							},
+						},
+						strong: {
+							color: 'inherit',
+							fontWeight: 'bold',
+						},
+						h1: {
+							color: 'inherit',
+						},
+						h2: {
+							color: 'inherit',
+						},
+						h3: {
+							color: 'inherit',
+						},
+						h4: {
+							color: 'inherit',
+						},
+						code: {
+							color: 'inherit',
+							backgroundColor: 'hsl(var(--muted))',
+							borderRadius: '0.25rem',
+							padding: '0.15rem 0.3rem',
+						},
+						pre: {
+							color: 'hsl(var(--foreground))',
+							backgroundColor: 'hsl(var(--muted))',
+						},
+						blockquote: {
+							color: 'inherit',
+							borderLeftColor: 'hsl(var(--border))',
+						},
+						hr: {
+							borderColor: 'hsl(var(--border))',
+						},
+					},
+				},
+			},
 		}
 	},
+	plugins: [typography],
 };
 
 export default config;
