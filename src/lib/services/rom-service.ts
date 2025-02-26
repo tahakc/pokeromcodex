@@ -69,7 +69,7 @@ export async function getAllRoms(page = 1, pageSize = 20): Promise<{ data: Rom[]
   }
 
   return { 
-    data: data as Rom[], 
+    data: formattedData as Rom[], 
     count: count || 0 
   };
 }
