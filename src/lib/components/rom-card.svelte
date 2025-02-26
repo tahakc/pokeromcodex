@@ -61,7 +61,7 @@
               variant="secondary"
               class="absolute right-2 top-2 bg-background/80 backdrop-blur"
             >
-              {new RegExp('^\\d+\\.').test(rom.version) ? `v${rom.version}` : rom.version}
+              {rom.version}
             </Badge>
           {/if}
         </div>
