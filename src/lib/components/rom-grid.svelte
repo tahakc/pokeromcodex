@@ -30,7 +30,7 @@
         in:fly={{ y: 20, duration: 300, delay: 100 }}
         animate:flip={{ duration: 300 }}
       >
-        <RomCard {rom} />
+        <RomCard {rom} {displayRoms} />
       </div>
     {/each}
   </div>

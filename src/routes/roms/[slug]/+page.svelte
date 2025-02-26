@@ -111,6 +111,17 @@
           src={rom.image}
           alt={rom.name}
           class="h-full w-full object-cover"
+          fetchpriority="high"
+          decoding="async"
+          srcset={`${rom.image}?width=640 640w,
+                  ${rom.image}?width=768 768w,
+                  ${rom.image}?width=1024 1024w,
+                  ${rom.image}?width=1280 1280w,
+                  ${rom.image}?width=1536 1536w`}
+          sizes="(max-width: 640px) 100vw,
+                 (max-width: 1024px) 75vw,
+                 (max-width: 1280px) 66vw,
+                 50vw"
         />
       {:else}
         <div class="flex h-full items-center justify-center">
