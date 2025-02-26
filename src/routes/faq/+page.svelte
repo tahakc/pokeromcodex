@@ -202,19 +202,21 @@
 				Join our community on Discord or check out the r/PokemonROMhacks subreddit for more help.
 			</p>
 			<div class="mt-4 flex justify-center gap-4">
-				<a
-					href="https://discord.com"
-					class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
-				>
-					Join Discord
-				</a>
-				<a
-					href="https://www.reddit.com/r/PokemonROMhacks/"
-					class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
-				>
-					Visit Subreddit
-				</a>
-			</div>
+                <a
+                    href="https://discord.gg/XBcwTDWCHQ"
+                    target="_blank"
+                    class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+                >
+                    Join Discord
+                </a>
+                <a
+                    href="https://www.reddit.com/r/PokemonROMhacks/"
+                    target="_blank"
+                    class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+                >
+                    Visit Subreddit
+                </a>
+            </div>
 		</div>
 	</div>
 </div>

@@ -185,7 +185,7 @@
       <RomGrid roms={filteredRoms} {isLoading} />
       
       {#if totalPages > 1}
-        <div class="mt-8 flex justify-center">
+        <div class="my-8 flex justify-center">
           <div class="flex items-center space-x-2">
             <Button 
               variant="outline" 
