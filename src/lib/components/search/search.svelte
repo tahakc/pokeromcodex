@@ -59,14 +59,7 @@
     }
     
     filterOptions = await getFilterOptions();
-    console.log('Filter options loaded:', filterOptions);
-    
-    const hasSearchCriteria = Object.values(selectedFilters).some(arr => arr.length > 0) || 
-                             searchQuery.trim() !== '';
-                         
-    if (hasSearchCriteria || currentPage > 1) {
-      await performSearch();
-    }
+    await performSearch();
     
     isInitialLoad = false;
     loading = false;
@@ -165,6 +158,7 @@
       }
       
       await goto(url, { keepFocus: true });
+      await performSearch();
     }, 300);
   }
   
