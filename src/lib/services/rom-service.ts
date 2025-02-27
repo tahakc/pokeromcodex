@@ -196,7 +196,7 @@ export async function searchRoms(
     
     const result = {
       data: filteredData.slice(0, pageSize) as Rom[],
-      count: count || 0
+      count: needsLocalFiltering ? filteredData.length : (count || 0)
     };
     
     setCachedData(cacheKey, result);
