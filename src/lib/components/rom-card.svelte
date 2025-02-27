@@ -5,6 +5,7 @@
   import { Badge } from "$lib/components/ui/badge";
   import { cn } from "$lib/utils";
   import { Gamepad2, Star, Sparkles } from "lucide-svelte";
+  import OptimizedImage from "$lib/components/optimized-image.svelte";
 
   export let rom: Rom & { slug: string; isLoading?: boolean };
   export let displayRoms: (Rom & { slug: string; isLoading?: boolean })[] = [];
@@ -47,21 +48,12 @@
       <CardHeader class="p-0">
         <div class="relative aspect-video w-full overflow-hidden bg-muted">
           {#if rom.image}
-            <img
+            <OptimizedImage
               src={rom.image}
               alt={rom.name}
-              class="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-              loading="lazy"
-              decoding="async"
-              srcset={`${rom.image}?width=384 384w,
-                      ${rom.image}?width=640 640w,
-                      ${rom.image}?width=768 768w,
-                      ${rom.image}?width=1024 1024w`}
-              sizes="(max-width: 640px) 100vw,
-                     (max-width: 768px) 50vw,
-                     (max-width: 1024px) 33vw,
-                     25vw"
-              fetchpriority={rom.slug === displayRoms[0]?.slug ? "high" : "low"}
+              layout="card"
+              className="transition-transform duration-300 group-hover:scale-105"
+              isFirstInList={rom.slug === displayRoms[0]?.slug}
             />
           {:else}
             <div class="flex h-full items-center justify-center">
