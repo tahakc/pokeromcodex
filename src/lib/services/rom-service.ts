@@ -12,10 +12,10 @@ let filterOptionsCache: {
 
 let allRomsCache: Rom[] | null = null;
 let lastFetchTime = 0;
-const CACHE_TTL = 5 * 60 * 1000; // 5 mins for now idk
+const CACHE_TTL = 5 * 60 * 1000;
 
 let searchResultsCache: Map<string, { data: Rom[], count: number, timestamp: number }> = new Map();
-const SEARCH_CACHE_TTL = 2 * 60 * 1000; // 2 minutes cache
+const SEARCH_CACHE_TTL = 2 * 60 * 1000;
 
 const requestCache: Map<string, { data: any; timestamp: number }> = new Map();
 
@@ -50,36 +50,22 @@ function formatVersion(version: string): string {
 }
 
 export async function getAllRoms(page = 1, pageSize = 20): Promise<{ data: Rom[], count: number }> {
-  const from = (page - 1) * pageSize;
-  const to = from + pageSize - 1;
-
-  const { data, error, count } = await supabase
-    .from(TABLE_NAME)
-    .select('*', { count: 'exact' })
-    .range(from, to);
-
-  if (error) {
-    console.error('Error fetching ROMs:', error);
-    return { data: [], count: 0 };
-  }
-
-  const formattedData = data.map(rom => ({
-    ...rom,
-    version: formatVersion(rom.version)
-  }));
-
-  if (page === 1) {
-    allRomsCache = formattedData as Rom[];
-    lastFetchTime = Date.now();
-  }
-
-  return { 
-    data: formattedData as Rom[], 
-    count: count || 0 
-  };
+  return searchRoms('', {
+    baseGame: [],
+    status: [],
+    difficulty: [],
+    features: [],
+  }, page, pageSize);
 }
 
 export async function getRomById(id: number): Promise<Rom | null> {
+  const cacheKey = `getRomById-${id}`;
+  const cachedData = getCachedData(cacheKey);
+  
+  if (cachedData) {
+    return cachedData;
+  }
+  
   const { data, error } = await supabase
     .from(TABLE_NAME)
     .select('*')
@@ -91,10 +77,14 @@ export async function getRomById(id: number): Promise<Rom | null> {
     return null;
   }
 
-  return {
+  const result = {
     ...data,
     version: formatVersion(data.version)
   } as Rom;
+  
+  setCachedData(cacheKey, result);
+  
+  return result;
 }
 
 export async function searchRoms(
@@ -115,6 +105,20 @@ export async function searchRoms(
     if (cachedResult) {
       console.log('Returning cached results');
       return cachedResult;
+    }
+    
+    const hasNoFilters = Object.values(filters).every(arr => arr.length === 0);
+    const hasNoQuery = !query || query.trim() === '';
+    const shouldUseAllRomsCache = hasNoFilters && hasNoQuery && allRomsCache && (Date.now() - lastFetchTime < CACHE_TTL);
+    
+    if (shouldUseAllRomsCache && page === 1) {
+      console.log('Using allRomsCache for simple query');
+      const result = {
+        data: allRomsCache!.slice(0, pageSize), 
+        count: allRomsCache!.length
+      };
+      setCachedData(cacheKey, result);
+      return result;
     }
     
     console.log('Fetching fresh results from DB');
@@ -185,6 +189,11 @@ export async function searchRoms(
       });
     }
     
+    if (hasNoFilters && hasNoQuery && page === 1) {
+      allRomsCache = filteredData as Rom[];
+      lastFetchTime = Date.now();
+    }
+    
     const result = {
       data: filteredData.slice(0, pageSize) as Rom[],
       count: count || 0
@@ -206,9 +215,11 @@ export async function getFilterOptions(): Promise<{
   features: string[];
 }> {
   if (filterOptionsCache) {
+    console.log('Using cached filter options');
     return filterOptionsCache;
   }
 
+  console.log('Fetching filter options from DB');
   const { data, error } = await supabase
     .from(TABLE_NAME)
     .select('base_game, status, features');
@@ -254,6 +265,13 @@ export async function getFilterOptions(): Promise<{
 }
 
 export async function getRomBySlug(slug: string): Promise<Rom | null> {
+  const cacheKey = `getRomBySlug-${slug}`;
+  const cachedData = getCachedData(cacheKey);
+  
+  if (cachedData) {
+    return cachedData;
+  }
+  
   const { data, error } = await supabase
     .from(TABLE_NAME)
     .select('*')
@@ -265,30 +283,25 @@ export async function getRomBySlug(slug: string): Promise<Rom | null> {
     return null;
   }
 
-  return {
+  const result = {
     ...data,
     version: formatVersion(data.version)
   } as Rom;
+  
+  setCachedData(cacheKey, result);
+  
+  return result;
 }
 
 export async function nameToSlug(name: string): Promise<string> {
-  const { data, error } = await supabase
-    .from(TABLE_NAME)
-    .select('slug')
-    .eq('name', name)
-    .single();
-
-  if (error || !data) {
-    console.error(`Error getting slug for name ${name}:`, error);
-    return name.toLowerCase()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-');
-  }
-
-  return data.slug;
+  return name
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .trim();
 }
 
 export function getSkeletonImageUrl(): string {
-  return '/images/rom-skeleton.svg';
+  return '/images/placeholder.png';
 } 

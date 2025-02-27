@@ -9,6 +9,8 @@
   import { page } from "$app/stores";
   import { isAnyModalOpen } from "$lib/stores/modal";
   import SeoHead from "$lib/components/seo/seo-head.svelte";
+  import { browser } from "$app/environment";
+  import { onMount } from "svelte";
 
   export let data;
   
@@ -18,12 +20,22 @@
   let currentPage = data.page;
   const pageSize = data.pageSize;
   let isLoading = false;
+  let isInitialized = false;
+  let initialDataDisplayed = true;
   $: totalPages = Math.ceil(totalCount / pageSize);
 
+  onMount(() => {
+    isInitialized = true;
+  });
+
   function handleSearch(roms: (Rom & { slug: string })[], count: number) {
-    filteredRoms = roms;
-    totalCount = count;
-    totalPages = Math.ceil(count / pageSize);
+    if (roms.length === 0 || 
+        JSON.stringify(roms.map(r => r.id)) !== JSON.stringify(filteredRoms.map(r => r.id))) {
+      filteredRoms = roms;
+      totalCount = count;
+      totalPages = Math.ceil(count / pageSize);
+      initialDataDisplayed = false;
+    }
   }
 
   function setLoadingState(loading: boolean) {
@@ -34,6 +46,7 @@
     if (newPage >= 1 && newPage <= totalPages) {
       const url = new URL($page.url);
       url.searchParams.set('page', newPage.toString());
+      initialDataDisplayed = false;
       await goto(url, { keepFocus: true });
       currentPage = newPage;
     }

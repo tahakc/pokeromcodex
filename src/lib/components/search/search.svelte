@@ -33,6 +33,8 @@
   };
   let loading = true;
   let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+  let isInitialLoad = true;
+  let prevPage = currentPage;
 
   onMount(async () => {
     if (browser) {
@@ -59,11 +61,21 @@
     filterOptions = await getFilterOptions();
     console.log('Filter options loaded:', filterOptions);
     
-    await performSearch();
+    const hasSearchCriteria = Object.values(selectedFilters).some(arr => arr.length > 0) || 
+                             searchQuery.trim() !== '';
+                         
+    if (hasSearchCriteria || currentPage > 1) {
+      await performSearch();
+    }
+    
+    isInitialLoad = false;
     loading = false;
+    onLoadingChange(false);
   });
 
   async function performSearch() {
+    if (loading) return;
+    
     loading = true;
     onLoadingChange(true);
     console.log('Performing search with:', { searchQuery, selectedFilters, currentPage, pageSize });
@@ -88,8 +100,20 @@
     }
   }
 
-  function updateURL() {
-    if (!browser) return Promise.resolve();
+  function handleFilterChange(
+    category: keyof SearchFilters,
+    value: string
+  ) {
+    console.log('Filter change:', { category, value });
+    
+    const index = selectedFilters[category].indexOf(value);
+    if (index === -1) {
+      selectedFilters[category] = [...selectedFilters[category], value];
+    } else {
+      selectedFilters[category] = selectedFilters[category].filter((v) => v !== value);
+    }
+    
+    console.log('Updated filters:', selectedFilters);
     
     const url = new URL(window.location.href);
     
@@ -109,42 +133,47 @@
     
     url.searchParams.set('page', '1');
     
-    return goto(url, { keepFocus: true });
-  }
-
-  function handleFilterChange(
-    category: keyof SearchFilters,
-    value: string
-  ) {
-    console.log('Filter change:', { category, value });
-    
-    const index = selectedFilters[category].indexOf(value);
-    if (index === -1) {
-      selectedFilters[category] = [...selectedFilters[category], value];
-    } else {
-      selectedFilters[category] = selectedFilters[category].filter((v) => v !== value);
-    }
-    
-    console.log('Updated filters:', selectedFilters);
-    
-    updateURL().then(() => performSearch());
+    goto(url, { keepFocus: true }).then(() => performSearch());
   }
 
   async function setupSearchDebounce() {
-    if (!browser) return;
+    if (!browser || isInitialLoad) return;
 
     if (searchTimeout) {
       clearTimeout(searchTimeout);
     }
     
     searchTimeout = setTimeout(async () => {
-      await updateURL();
-      await performSearch();
+      const url = new URL(window.location.href);
+      
+      if (searchQuery) {
+        url.searchParams.set('q', searchQuery);
+      } else {
+        url.searchParams.delete('q');
+      }
+      
+      Object.entries(selectedFilters).forEach(([key, values]) => {
+        if (values.length > 0) {
+          url.searchParams.set(key, values.join(','));
+        } else {
+          url.searchParams.delete(key);
+        }
+      });
+      
+      if (url.searchParams.get('page') !== '1') {
+        url.searchParams.set('page', '1');
+      }
+      
+      await goto(url, { keepFocus: true });
     }, 300);
   }
   
-  $: if (searchQuery !== undefined && browser) setupSearchDebounce();
-  $: if (currentPage && browser) performSearch();
+  $: if (searchQuery !== undefined && browser && !isInitialLoad) setupSearchDebounce();
+  
+  $: if (!isInitialLoad && currentPage !== prevPage) {
+    prevPage = currentPage;
+    performSearch();
+  }
 
   $: activeFiltersCount = Object.values(selectedFilters).reduce(
     (acc, filters) => acc + filters.length,
