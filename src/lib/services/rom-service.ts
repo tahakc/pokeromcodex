@@ -127,6 +127,7 @@ export async function searchRoms(
       .from(TABLE_NAME)
       .select('*', { count: 'exact' });
     
+    // Search terms use OR logic internally (name OR author)
     if (query && query.trim() !== '') {
       const searchTerms = query.trim().split(/\s+/).filter(Boolean);
       
@@ -140,19 +141,17 @@ export async function searchRoms(
       }
     }
     
-    if (filters.baseGame && filters.baseGame.length > 0) {
-      supabaseQuery = supabaseQuery.filter('base_game', 'cs', `[${filters.baseGame.map(g => `"${g}"`).join(',')}]`);
-    }
-    
-    if (filters.status && filters.status.length > 0) {
-      supabaseQuery = supabaseQuery.filter('status', 'cs', `[${filters.status.map(s => `"${s}"`).join(',')}]`);
-    }
+    let needsBaseGameFiltering = filters.baseGame && filters.baseGame.length > 0;
+    let needsStatusFiltering = filters.status && filters.status.length > 0;
     
     let needsLocalFiltering = 
       (filters.difficulty && filters.difficulty.length > 0) ||
-      (filters.features && filters.features.length > 0);
+      (filters.features && filters.features.length > 0) ||
+      needsBaseGameFiltering ||
+      needsStatusFiltering;
     
-    const effectivePageSize = needsLocalFiltering ? pageSize * 3 : pageSize;
+    // Increase page size to ensure we have enough data for client-side filtering
+    const effectivePageSize = needsLocalFiltering ? pageSize * 5 : pageSize;
     
     const from = (page - 1) * pageSize;
     const to = from + effectivePageSize - 1;
@@ -171,10 +170,30 @@ export async function searchRoms(
       version: formatVersion(rom.version)
     }));
     
+    // Apply base game filter on client side
+    if (needsBaseGameFiltering) {
+      filteredData = filteredData.filter(rom => {
+        const baseGames = rom.base_game || [];
+        return filters.baseGame.every(game => 
+          baseGames.includes(game)
+        );
+      });
+    }
+    
+    // Apply status filter on client side
+    if (needsStatusFiltering) {
+      filteredData = filteredData.filter(rom => {
+        const statuses = rom.status || [];
+        return filters.status.every(status => 
+          statuses.includes(status)
+        );
+      });
+    }
+    
     if (filters.difficulty && filters.difficulty.length > 0) {
       filteredData = filteredData.filter(rom => {
         const difficultyFeatures = rom.features?.gameplay_difficulty || [];
-        return filters.difficulty.some(diff => 
+        return filters.difficulty.every(diff => 
           difficultyFeatures.includes(diff)
         );
       });
@@ -183,7 +202,7 @@ export async function searchRoms(
     if (filters.features && filters.features.length > 0) {
       filteredData = filteredData.filter(rom => {
         const qolFeatures = rom.features?.qol || [];
-        return filters.features.some(feature => 
+        return filters.features.every(feature => 
           qolFeatures.includes(feature)
         );
       });
