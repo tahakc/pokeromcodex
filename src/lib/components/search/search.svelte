@@ -16,6 +16,7 @@
   export let onLoadingChange: (loading: boolean) => void = () => {};
   export let currentPage = 1;
   export let pageSize = 20;
+  export let skipInitialSearch = false;
 
   let searchQuery = "";
   let showFilters = false;
@@ -31,12 +32,14 @@
     difficulties: [] as string[],
     features: [] as string[],
   };
-  let loading = true;
+  let loading = false;
   let searchTimeout: ReturnType<typeof setTimeout> | null = null;
   let isInitialLoad = true;
   let prevPage = currentPage;
+  let hasInteracted = false;
 
-  onMount(async () => {
+  // Initialize filters outside of onMount
+  function initializeFilters() {
     if (browser) {
       const url = new URL(window.location.href);
       
@@ -57,16 +60,77 @@
         features
       };
     }
+  }
+  
+  // Load filter options and perform search
+  function loadFiltersAndSearch() {
+    if (browser) {
+      // Load filter options
+      getFilterOptions().then(options => {
+        filterOptions = options;
+        
+        // Check if we need to perform a search
+        const hasFilters = Object.values(selectedFilters).some(arr => arr.length > 0);
+        const hasQuery = !!searchQuery;
+        const isNotFirstPage = currentPage !== 1;
+        
+        if (!skipInitialSearch && (hasFilters || hasQuery || isNotFirstPage)) {
+          performSearch();
+        }
+        
+        // Mark initial load as complete
+        isInitialLoad = false;
+        onLoadingChange(false);
+      });
+    }
+  }
+
+  // Use onMount without async
+  onMount(() => {
+    // Initialize filters from URL
+    initializeFilters();
     
-    filterOptions = await getFilterOptions();
-    await performSearch();
+    // Load filter options and perform search if needed
+    loadFiltersAndSearch();
     
-    isInitialLoad = false;
-    loading = false;
-    onLoadingChange(false);
+    // Track user interaction
+    const trackInteraction = () => {
+      hasInteracted = true;
+    };
+    
+    window.addEventListener('click', trackInteraction);
+    window.addEventListener('keydown', trackInteraction);
+    window.addEventListener('scroll', trackInteraction);
+    
+    // Return cleanup function
+    return () => {
+      window.removeEventListener('click', trackInteraction);
+      window.removeEventListener('keydown', trackInteraction);
+      window.removeEventListener('scroll', trackInteraction);
+    };
   });
 
   async function performSearch() {
+    // Don't show loading state during initial load or before user interaction
+    if (isInitialLoad || !hasInteracted) {
+      try {
+        const { data, count } = await searchRoms(
+          searchQuery,
+          selectedFilters,
+          currentPage,
+          pageSize
+        );
+        
+        console.log('Search results:', { count, resultsLength: data.length });
+        
+        onSearch(data, count);
+      } catch (error) {
+        console.error('Error performing search:', error);
+        onSearch([], 0);
+      }
+      return;
+    }
+    
     if (loading) return;
     
     loading = true;
@@ -124,7 +188,9 @@
       }
     });
     
-    url.searchParams.set('page', '1');
+    if (url.searchParams.get('page') !== String(currentPage)) {
+      url.searchParams.set('page', String(currentPage));
+    }
     
     goto(url, { keepFocus: true }).then(() => performSearch());
   }
@@ -138,26 +204,42 @@
     
     searchTimeout = setTimeout(async () => {
       const url = new URL(window.location.href);
+      const currentUrl = new URL(window.location.href);
+      let urlChanged = false;
       
       if (searchQuery) {
-        url.searchParams.set('q', searchQuery);
-      } else {
+        if (currentUrl.searchParams.get('q') !== searchQuery) {
+          url.searchParams.set('q', searchQuery);
+          urlChanged = true;
+        }
+      } else if (currentUrl.searchParams.has('q')) {
         url.searchParams.delete('q');
+        urlChanged = true;
       }
       
       Object.entries(selectedFilters).forEach(([key, values]) => {
-        if (values.length > 0) {
-          url.searchParams.set(key, values.join(','));
-        } else {
-          url.searchParams.delete(key);
+        const currentValue = currentUrl.searchParams.get(key);
+        const newValue = values.length > 0 ? values.join(',') : null;
+        
+        if (currentValue !== newValue) {
+          if (values.length > 0) {
+            url.searchParams.set(key, values.join(','));
+          } else {
+            url.searchParams.delete(key);
+          }
+          urlChanged = true;
         }
       });
       
-      if (url.searchParams.get('page') !== '1') {
-        url.searchParams.set('page', '1');
+      if (currentUrl.searchParams.get('page') !== '1' && currentPage === 1) {
+        url.searchParams.delete('page');
+        urlChanged = true;
       }
       
-      await goto(url, { keepFocus: true });
+      if (urlChanged) {
+        await goto(url, { keepFocus: true, replaceState: true });
+      }
+      
       await performSearch();
     }, 300);
   }

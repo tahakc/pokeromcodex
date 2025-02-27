@@ -10,7 +10,8 @@
   import { isAnyModalOpen } from "$lib/stores/modal";
   import SeoHead from "$lib/components/seo/seo-head.svelte";
   import { browser } from "$app/environment";
-  import { onMount } from "svelte";
+  import { onMount, afterUpdate } from "svelte";
+  import { navigating } from "$app/stores";
 
   export let data;
   
@@ -22,10 +23,43 @@
   let isLoading = false;
   let isInitialized = false;
   let initialDataDisplayed = true;
+  let isFirstLoad = true;
+  let skipInitialSearch = true;
+  let isNavigating = false;
+  let initialLoadComplete = false; // New flag to track initial load
+  let hasInteracted = false; // Track if user has interacted with the page
   $: totalPages = Math.ceil(totalCount / pageSize);
+  
+  // Track navigation state to prevent double loading
+  $: isNavigating = !!$navigating;
 
   onMount(() => {
     isInitialized = true;
+    
+    // Set a flag to skip the initial search from the Search component
+    // This prevents the double loading issue
+    setTimeout(() => {
+      isFirstLoad = false;
+      initialLoadComplete = true; // Mark initial load as complete
+    }, 100);
+    
+    // Add event listeners to track user interaction
+    if (browser) {
+      const trackInteraction = () => {
+        hasInteracted = true;
+      };
+      
+      window.addEventListener('click', trackInteraction);
+      window.addEventListener('keydown', trackInteraction);
+      window.addEventListener('scroll', trackInteraction);
+      
+      // Return cleanup function directly
+      return () => {
+        window.removeEventListener('click', trackInteraction);
+        window.removeEventListener('keydown', trackInteraction);
+        window.removeEventListener('scroll', trackInteraction);
+      };
+    }
   });
 
   function handleSearch(roms: (Rom & { slug: string })[], count: number) {
@@ -39,15 +73,26 @@
   }
 
   function setLoadingState(loading: boolean) {
-    isLoading = loading;
+    // Only set loading state if user has interacted with the page
+    // or if we're past the initial load
+    if (hasInteracted || initialLoadComplete) {
+      isLoading = loading;
+    }
   }
 
   async function handlePageChange(newPage: number) {
     if (newPage >= 1 && newPage <= totalPages) {
       const url = new URL($page.url);
-      url.searchParams.set('page', newPage.toString());
+      
+      // Only add page parameter if it's not page 1
+      if (newPage === 1) {
+        url.searchParams.delete('page');
+      } else {
+        url.searchParams.set('page', newPage.toString());
+      }
+      
       initialDataDisplayed = false;
-      await goto(url, { keepFocus: true });
+      await goto(url, { keepFocus: true, replaceState: true });
       currentPage = newPage;
     }
   }
@@ -139,6 +184,7 @@
             currentPage={currentPage} 
             pageSize={pageSize} 
             onLoadingChange={setLoadingState}
+            skipInitialSearch={skipInitialSearch || isNavigating}
           />
         </div>
       </div>

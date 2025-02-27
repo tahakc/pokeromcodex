@@ -12,12 +12,15 @@ let filterOptionsCache: {
 
 let allRomsCache: Rom[] | null = null;
 let lastFetchTime = 0;
-const CACHE_TTL = 5 * 60 * 1000;
+const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+const SEARCH_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
 let searchResultsCache: Map<string, { data: Rom[], count: number, timestamp: number }> = new Map();
-const SEARCH_CACHE_TTL = 2 * 60 * 1000;
 
-const requestCache: Map<string, { data: any; timestamp: number }> = new Map();
+let initialPageCache: { data: Rom[], count: number } | null = null;
+let initialPageCacheTime = 0;
+
+let requestCache: Map<string, { data: any; timestamp: number }> = new Map();
 
 function clearExpiredCache() {
   const now = Date.now();
@@ -50,12 +53,30 @@ function formatVersion(version: string): string {
 }
 
 export async function getAllRoms(page = 1, pageSize = 20): Promise<{ data: Rom[], count: number }> {
-  return searchRoms('', {
+  // For the initial page load (page 1), use a dedicated cache
+  if (page === 1) {
+    // Check if we have a valid cache for the initial page
+    if (initialPageCache && (Date.now() - initialPageCacheTime < CACHE_TTL)) {
+      console.log('Using initialPageCache for faster loading');
+      return initialPageCache;
+    }
+  }
+  
+  // Fetch and cache the initial page data
+  const result = await searchRoms('', {
     baseGame: [],
     status: [],
     difficulty: [],
     features: [],
   }, page, pageSize);
+  
+  // Only cache page 1 results
+  if (page === 1) {
+    initialPageCache = result;
+    initialPageCacheTime = Date.now();
+  }
+  
+  return result;
 }
 
 export async function getRomById(id: number): Promise<Rom | null> {
@@ -323,4 +344,4 @@ export async function nameToSlug(name: string): Promise<string> {
 
 export function getSkeletonImageUrl(): string {
   return '/images/placeholder.png';
-} 
+}
