@@ -141,11 +141,11 @@ export async function searchRoms(
     }
     
     if (filters.baseGame && filters.baseGame.length > 0) {
-      supabaseQuery = supabaseQuery.overlaps('base_game', filters.baseGame);
+      supabaseQuery = supabaseQuery.filter('base_game', 'cs', `[${filters.baseGame.map(g => `"${g}"`).join(',')}]`);
     }
     
     if (filters.status && filters.status.length > 0) {
-      supabaseQuery = supabaseQuery.in('status', filters.status);
+      supabaseQuery = supabaseQuery.filter('status', 'cs', `[${filters.status.map(s => `"${s}"`).join(',')}]`);
     }
     
     let needsLocalFiltering = 
