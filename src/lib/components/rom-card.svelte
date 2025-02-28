@@ -3,8 +3,9 @@
   import type { Rom } from "$lib/types";
   import { Card, CardContent, CardFooter, CardHeader } from "$lib/components/ui/card";
   import { Badge } from "$lib/components/ui/badge";
-  import { cn } from "$lib/utils";
+  import { cn, optimizeImage } from "$lib/utils";
   import { Gamepad2, Star, Sparkles } from "lucide-svelte";
+  import { browser } from "$app/environment";
 
   export let rom: Rom & { slug: string; isLoading?: boolean };
   export let displayRoms: (Rom & { slug: string; isLoading?: boolean })[] = [];
@@ -14,6 +15,21 @@
     : "Date unknown";
     
   $: difficultyLevels = rom?.features?.gameplay_difficulty || [];
+  
+  // Check if we're on mobile
+  let isMobile = false;
+  if (browser) {
+    isMobile = window.innerWidth < 640;
+  }
+  
+  // Optimize image URLs with different sizes based on position and device
+  $: optimizedImage = rom.image 
+    ? optimizeImage(rom.image, {
+        width: isMobile ? 640 : (rom.slug === displayRoms[0]?.slug ? 1024 : 768),
+        quality: isMobile ? 75 : 85,
+        isMobile
+      }) 
+    : '';
 </script>
 
 <div class="group block">
@@ -47,22 +63,29 @@
       <CardHeader class="p-0">
         <div class="relative aspect-video w-full overflow-hidden bg-muted">
           {#if rom.image}
-            <img
-              src={rom.image}
-              alt={rom.name}
-              class="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-              loading={rom.slug === displayRoms[0]?.slug || rom.slug === displayRoms[1]?.slug || rom.slug === displayRoms[2]?.slug || rom.slug === displayRoms[3]?.slug ? "eager" : "lazy"}
-              decoding={rom.slug === displayRoms[0]?.slug || rom.slug === displayRoms[1]?.slug ? "sync" : "async"}
-              srcset={`${rom.image}?width=384 384w,
-                      ${rom.image}?width=640 640w,
-                      ${rom.image}?width=768 768w,
-                      ${rom.image}?width=1024 1024w`}
-              sizes="(max-width: 640px) 100vw,
-                     (max-width: 768px) 50vw,
-                     (max-width: 1024px) 33vw,
-                     25vw"
-              fetchpriority={rom.slug === displayRoms[0]?.slug || rom.slug === displayRoms[1]?.slug ? "high" : "auto"}
-            />
+            {#if rom.slug === displayRoms[0]?.slug}
+              <!-- First image - optimized for fastest loading -->
+              <img
+                src={optimizedImage}
+                alt={rom.name}
+                class="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                loading="eager"
+                decoding="sync"
+                fetchpriority="high"
+                style="will-change: transform; content-visibility: auto;"
+              />
+            {:else}
+              <!-- Other images - regular loading strategy -->
+              <img
+                src={optimizedImage}
+                alt={rom.name}
+                class="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                loading={rom.slug === displayRoms[1]?.slug || rom.slug === displayRoms[2]?.slug || rom.slug === displayRoms[3]?.slug ? "eager" : "lazy"}
+                decoding={rom.slug === displayRoms[1]?.slug ? "sync" : "async"}
+                fetchpriority={rom.slug === displayRoms[1]?.slug ? "high" : "auto"}
+                style="will-change: transform; content-visibility: auto;"
+              />
+            {/if}
           {:else}
             <div class="flex h-full items-center justify-center">
               <Gamepad2 class="h-12 w-12 text-muted-foreground/50" />

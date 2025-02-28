@@ -55,6 +55,7 @@
 		"framer-motion": "^12.4.7",
 		"lucide-svelte": "^0.475.0",
 		"marked": "^15.0.7",
+		"sharp": "^0.33.5",
 		"svelte-radix": "^2.0.1",
 		"zod": "^3.24.2"
 	}
