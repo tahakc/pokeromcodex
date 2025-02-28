@@ -51,8 +51,8 @@
               src={rom.image}
               alt={rom.name}
               class="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-              loading="lazy"
-              decoding="async"
+              loading={rom.slug === displayRoms[0]?.slug || rom.slug === displayRoms[1]?.slug || rom.slug === displayRoms[2]?.slug || rom.slug === displayRoms[3]?.slug ? "eager" : "lazy"}
+              decoding={rom.slug === displayRoms[0]?.slug || rom.slug === displayRoms[1]?.slug ? "sync" : "async"}
               srcset={`${rom.image}?width=384 384w,
                       ${rom.image}?width=640 640w,
                       ${rom.image}?width=768 768w,
@@ -61,7 +61,7 @@
                      (max-width: 768px) 50vw,
                      (max-width: 1024px) 33vw,
                      25vw"
-              fetchpriority={rom.slug === displayRoms[0]?.slug ? "high" : "low"}
+              fetchpriority={rom.slug === displayRoms[0]?.slug || rom.slug === displayRoms[1]?.slug ? "high" : "auto"}
             />
           {:else}
             <div class="flex h-full items-center justify-center">

@@ -150,6 +150,14 @@
       }
     }
   </style>
+  
+  {#if filteredRoms && filteredRoms.length > 0}
+    {#each filteredRoms.slice(0, 4) as rom, index}
+      {#if rom.image}
+        <link rel="preload" href={`${rom.image}?width=${index < 2 ? 1024 : 768}`} as="image" fetchpriority={index < 2 ? "high" : "auto"} />
+      {/if}
+    {/each}
+  {/if}
 </svelte:head>
 
 <div class="relative home-page">
