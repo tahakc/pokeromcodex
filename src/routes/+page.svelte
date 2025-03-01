@@ -12,7 +12,6 @@
   import { browser } from "$app/environment";
   import { onMount, afterUpdate } from "svelte";
   import { navigating } from "$app/stores";
-  import { optimizeImage } from "$lib/utils";
 
   export let data;
   
@@ -29,7 +28,6 @@
   let isNavigating = false;
   let initialLoadComplete = false; // New flag to track initial load
   let hasInteracted = false; // Track if user has interacted with the page
-  let isMobile = false; // Track if we're on mobile
   $: totalPages = Math.ceil(totalCount / pageSize);
   
   // Track navigation state to prevent double loading
@@ -38,25 +36,15 @@
   onMount(() => {
     isInitialized = true;
     
-    // Check if we're on mobile
+    // Set a flag to skip the initial search from the Search component
+    // This prevents the double loading issue
+    setTimeout(() => {
+      isFirstLoad = false;
+      initialLoadComplete = true; // Mark initial load as complete
+    }, 100);
+    
+    // Add event listeners to track user interaction
     if (browser) {
-      isMobile = window.innerWidth < 640;
-      
-      // Add resize listener
-      const handleResize = () => {
-        isMobile = window.innerWidth < 640;
-      };
-      
-      window.addEventListener('resize', handleResize);
-      
-      // Set a flag to skip the initial search from the Search component
-      // This prevents the double loading issue
-      setTimeout(() => {
-        isFirstLoad = false;
-        initialLoadComplete = true; // Mark initial load as complete
-      }, 100);
-      
-      // Add event listeners to track user interaction
       const trackInteraction = () => {
         hasInteracted = true;
       };
@@ -70,7 +58,6 @@
         window.removeEventListener('click', trackInteraction);
         window.removeEventListener('keydown', trackInteraction);
         window.removeEventListener('scroll', trackInteraction);
-        window.removeEventListener('resize', handleResize);
       };
     }
   });
@@ -118,13 +105,18 @@
 
 <svelte:head>
   <style>
-    /* Critical CSS for above-the-fold content */
     .home-page {
       transition: none !important;
       position: relative;
       z-index: 1;
       max-width: 100vw;
       overflow-x: hidden;
+    }
+    body.modal-open .home-page .gradient-bg {
+      transform: none !important;
+      opacity: 0.25 !important;
+      transition: none !important;
+      animation: none !important;
     }
     
     .gradient-container {
@@ -139,41 +131,11 @@
       width: 100%;
     }
     
-    h1 {
-      font-size: 2.25rem;
-      line-height: 2.5rem;
-      font-weight: 700;
-      letter-spacing: -0.025em;
+    h1, p {
       overflow-wrap: break-word;
       word-wrap: break-word;
       word-break: break-word;
       hyphens: auto;
-    }
-    
-    @media (min-width: 640px) {
-      h1 {
-        font-size: 3.75rem;
-        line-height: 1;
-      }
-    }
-    
-    p {
-      overflow-wrap: break-word;
-      word-wrap: break-word;
-      word-break: break-word;
-      hyphens: auto;
-    }
-    
-    .rom-card-container {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    
-    body.modal-open .home-page .gradient-bg {
-      transform: none !important;
-      opacity: 0.25 !important;
-      transition: none !important;
-      animation: none !important;
     }
     
     @media (max-width: 640px) {
@@ -186,69 +148,15 @@
       .gradient-bg div {
         max-width: calc(100vw - 2rem);
       }
-      
-      .home-page {
-        contain: content;
-      }
-      
-      .gradient-bg {
-        content-visibility: auto;
-      }
     }
   </style>
   
-  <!-- Add preconnect for Supabase image domain -->
-  <link rel="preconnect" href="https://cfowqsaskmpjmpuidtvn.supabase.co" crossorigin="anonymous" />
-  <link rel="dns-prefetch" href="https://cfowqsaskmpjmpuidtvn.supabase.co" />
-  
-  <!-- Add preload for critical fonts -->
-  <link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
-  
   {#if filteredRoms && filteredRoms.length > 0}
-    {#if browser}
-      {@const isMobile = window.innerWidth < 640}
-      {#each filteredRoms.slice(0, isMobile ? 2 : 4) as rom, index}
-        {#if rom.image}
-          <link 
-            rel="preload" 
-            href={optimizeImage(rom.image, {
-              width: isMobile ? (index === 0 ? 640 : 320) : (index < 2 ? 1024 : 768),
-              quality: isMobile ? 75 : 85,
-              isMobile
-            })} 
-            as="image" 
-            fetchpriority={index === 0 ? "high" : "auto"} 
-          />
-        {/if}
-      {/each}
-    {:else}
-      <!-- Server-side rendering fallback -->
-      {#each filteredRoms.slice(0, 2) as rom, index}
-        {#if rom.image}
-          <link 
-            rel="preload" 
-            href={optimizeImage(rom.image, {
-              width: 640,
-              quality: 75,
-              isMobile: true
-            })} 
-            as="image" 
-            fetchpriority={index === 0 ? "high" : "auto"} 
-            media="(max-width: 640px)"
-          />
-          <link 
-            rel="preload" 
-            href={optimizeImage(rom.image, {
-              width: index === 0 ? 1024 : 768,
-              quality: 85
-            })} 
-            as="image" 
-            fetchpriority={index === 0 ? "high" : "auto"} 
-            media="(min-width: 641px)"
-          />
-        {/if}
-      {/each}
-    {/if}
+    {#each filteredRoms.slice(0, 4) as rom, index}
+      {#if rom.image}
+        <link rel="preload" href={`${rom.image}?width=${index < 2 ? 1024 : 768}`} as="image" fetchpriority={index < 2 ? "high" : "auto"} />
+      {/if}
+    {/each}
   {/if}
 </svelte:head>
 
