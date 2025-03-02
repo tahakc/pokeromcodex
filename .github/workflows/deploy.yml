@@ -27,7 +27,7 @@ jobs:
         run: pnpm install 
 
       - name: Initialize environment variables
-        run: echo "PUBLIC_SUPABASE_URL=${{ secrets.PUBLIC_SUPABASE_URL }}" >> $GITHUB_ENV && echo "PUBLIC_SUPABASE_ANON_KEY=${{ secrets.PUBLIC_SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
+        run: echo "PUBLIC_SUPABASE_URL=${{ secrets.PUBLIC_SUPABASE_URL }}" >> $GITHUB_ENV && echo "PUBLIC_SUPABASE_ANON_KEY=${{ secrets.PUBLIC_SUPABASE_ANON_KEY }}" >> $GITHUB_ENV && echo "PUBLIC_SITE_URL=${{ secrets.PUBLIC_SITE_URL }}" >> $GITHUB_ENV
 
       - name: Build
         run: pnpm build
