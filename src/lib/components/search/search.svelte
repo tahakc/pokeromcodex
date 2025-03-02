@@ -37,8 +37,6 @@
   let isInitialLoad = true;
   let prevPage = currentPage;
   let hasInteracted = false;
-
-  // Initialize filters outside of onMount
   function initializeFilters() {
     if (browser) {
       const url = new URL(window.location.href);
@@ -61,15 +59,10 @@
       };
     }
   }
-  
-  // Load filter options and perform search
   function loadFiltersAndSearch() {
     if (browser) {
-      // Load filter options
       getFilterOptions().then(options => {
         filterOptions = options;
-        
-        // Check if we need to perform a search
         const hasFilters = Object.values(selectedFilters).some(arr => arr.length > 0);
         const hasQuery = !!searchQuery;
         const isNotFirstPage = currentPage !== 1;
@@ -77,23 +70,14 @@
         if (!skipInitialSearch && (hasFilters || hasQuery || isNotFirstPage)) {
           performSearch();
         }
-        
-        // Mark initial load as complete
         isInitialLoad = false;
         onLoadingChange(false);
       });
     }
   }
-
-  // Use onMount without async
   onMount(() => {
-    // Initialize filters from URL
     initializeFilters();
-    
-    // Load filter options and perform search if needed
     loadFiltersAndSearch();
-    
-    // Track user interaction
     const trackInteraction = () => {
       hasInteracted = true;
     };
@@ -101,8 +85,6 @@
     window.addEventListener('click', trackInteraction);
     window.addEventListener('keydown', trackInteraction);
     window.addEventListener('scroll', trackInteraction);
-    
-    // Return cleanup function
     return () => {
       window.removeEventListener('click', trackInteraction);
       window.removeEventListener('keydown', trackInteraction);
@@ -111,7 +93,6 @@
   });
 
   async function performSearch() {
-    // Don't show loading state during initial load or before user interaction
     if (isInitialLoad || !hasInteracted) {
       try {
         const { data, count } = await searchRoms(

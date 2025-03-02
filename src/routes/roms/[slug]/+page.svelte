@@ -12,9 +12,11 @@
   import { marked } from 'marked';
   import DOMPurify from 'dompurify';
   import SeoHead from "$lib/components/seo/seo-head.svelte";
+  import CollectionButton from "$lib/components/collection/collection-button.svelte";
 
   export let data;
   const rom: Rom = data.rom;
+  const isInCollection = data.isInCollection;
 
   $: formattedDate = rom?.date_updated
     ? format(parse(rom.date_updated, "yyyy/MM/dd", new Date()), "MMMM d, yyyy")
@@ -243,6 +245,15 @@
                 </a>
               </div>
             {/if}
+            
+            <div class="pt-2">
+              <CollectionButton 
+                romId={rom.id} 
+                isInCollection={isInCollection} 
+                variant="outline" 
+                size="default" 
+              />
+            </div>
           </CardContent>
         </Card>
       </div>

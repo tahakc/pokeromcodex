@@ -4,16 +4,20 @@
   import type { Rom } from "$lib/types";
   import { fade, fly } from "svelte/transition";
   import { Button } from "$lib/components/ui/button";
-  import { ChevronLeft, ChevronRight } from "lucide-svelte";
+  import { ChevronLeft, ChevronRight, LayoutGrid, LayoutList } from "lucide-svelte";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   import { isAnyModalOpen } from "$lib/stores/modal";
   import SeoHead from "$lib/components/seo/seo-head.svelte";
   import { browser } from "$app/environment";
-  import { onMount, afterUpdate } from "svelte";
+  import { onMount } from "svelte";
   import { navigating } from "$app/stores";
+  import { Card, CardContent } from "$lib/components/ui/card";
+  import { Badge } from "$lib/components/ui/badge";
+  import { Gamepad2, Star } from "lucide-svelte";
+  import CollectionButton from "$lib/components/collection/collection-button.svelte";
 
-  export let data;
+  let { data } = $props();
   
   let filteredRoms = data.roms;
   let totalCount = data.count;
@@ -25,13 +29,17 @@
   let initialDataDisplayed = true;
   let isFirstLoad = true;
   let skipInitialSearch = true;
-  let isNavigating = false;
+  let isNavigating = $state(false);
   let initialLoadComplete = false; // New flag to track initial load
   let hasInteracted = false; // Track if user has interacted with the page
-  $: totalPages = Math.ceil(totalCount / pageSize);
+  let layoutMode = $state('grid'); // 'grid' for default grid layout, 'list' for rectangular
+  
+  let totalPages = $derived(Math.ceil(totalCount / pageSize));
   
   // Track navigation state to prevent double loading
-  $: isNavigating = !!$navigating;
+  $effect(() => {
+    isNavigating = !!$navigating;
+  });
 
   onMount(() => {
     isInitialized = true;
@@ -67,7 +75,6 @@
         JSON.stringify(roms.map(r => r.id)) !== JSON.stringify(filteredRoms.map(r => r.id))) {
       filteredRoms = roms;
       totalCount = count;
-      totalPages = Math.ceil(count / pageSize);
       initialDataDisplayed = false;
     }
   }
@@ -95,6 +102,10 @@
       await goto(url, { keepFocus: true, replaceState: true });
       currentPage = newPage;
     }
+  }
+  
+  function handleRomClick(slug: string) {
+    goto(`/roms/${slug}`);
   }
 </script>
 
@@ -215,41 +226,154 @@
         <div class="text-lg text-muted-foreground">Failed to load ROM hacks. Please try again later.</div>
       </div>
     {:else}
-      <div class="mb-6 flex justify-between items-center">
-        <div class="text-muted-foreground">
-          Showing {filteredRoms.length} of {totalCount} {totalCount === 1 ? 'result' : 'results'}
-        </div>
-        
-        {#if totalPages > 1}
-          <div class="flex items-center space-x-2">
+      <div class="mb-6 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
+        <div class="flex items-center justify-between w-full md:w-auto">
+          <div class="text-muted-foreground">
+            Showing {filteredRoms.length} of {totalCount} {totalCount === 1 ? 'result' : 'results'}
+          </div>
+          
+          <div class="flex items-center md:hidden border rounded-md">
             <Button 
-              variant="outline" 
-              size="sm" 
-              disabled={currentPage === 1}
-              on:click={() => handlePageChange(currentPage - 1)}
+              variant={layoutMode === 'grid' ? 'default' : 'ghost'} 
+              size="icon"
+              class="h-9 w-9 rounded-none rounded-l-md"
+              on:click={() => layoutMode = 'grid'}
+              aria-label="Grid layout"
             >
-              <ChevronLeft class="h-4 w-4" />
-              <span class="sr-only">Previous page</span>
+              <LayoutGrid class="h-4 w-4" />
             </Button>
-            
-            <div class="text-sm">
-              Page {currentPage} of {totalPages}
-            </div>
-            
             <Button 
-              variant="outline" 
-              size="sm" 
-              disabled={currentPage === totalPages}
-              on:click={() => handlePageChange(currentPage + 1)}
+              variant={layoutMode === 'list' ? 'default' : 'ghost'} 
+              size="icon"
+              class="h-9 w-9 rounded-none rounded-r-md"
+              on:click={() => layoutMode = 'list'}
+              aria-label="List layout"
             >
-              <ChevronRight class="h-4 w-4" />
-              <span class="sr-only">Next page</span>
+              <LayoutList class="h-4 w-4" />
             </Button>
           </div>
-        {/if}
+        </div>
+        
+        <div class="flex items-center gap-4">
+          <div class="hidden md:flex items-center border rounded-md">
+            <Button 
+              variant={layoutMode === 'grid' ? 'default' : 'ghost'} 
+              size="icon"
+              class="h-9 w-9 rounded-none rounded-l-md"
+              on:click={() => layoutMode = 'grid'}
+              aria-label="Grid layout"
+            >
+              <LayoutGrid class="h-4 w-4" />
+            </Button>
+            <Button 
+              variant={layoutMode === 'list' ? 'default' : 'ghost'} 
+              size="icon"
+              class="h-9 w-9 rounded-none rounded-r-md"
+              on:click={() => layoutMode = 'list'}
+              aria-label="List layout"
+            >
+              <LayoutList class="h-4 w-4" />
+            </Button>
+          </div>
+          
+          {#if totalPages > 1}
+            <div class="flex items-center space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                disabled={currentPage === 1}
+                on:click={() => handlePageChange(currentPage - 1)}
+              >
+                <ChevronLeft class="h-4 w-4" />
+                <span class="sr-only">Previous page</span>
+              </Button>
+              
+              <div class="text-sm">
+                Page {currentPage} of {totalPages}
+              </div>
+              
+              <Button 
+                variant="outline" 
+                size="sm" 
+                disabled={currentPage === totalPages}
+                on:click={() => handlePageChange(currentPage + 1)}
+              >
+                <ChevronRight class="h-4 w-4" />
+                <span class="sr-only">Next page</span>
+              </Button>
+            </div>
+          {/if}
+        </div>
       </div>
       
-      <RomGrid roms={filteredRoms} {isLoading} />
+      {#if layoutMode === 'grid'}
+        <RomGrid roms={filteredRoms} {isLoading} />
+      {:else}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {#each filteredRoms as rom}
+            <Card class="overflow-hidden group hover:border-primary transition-colors">
+              <div 
+                class="relative h-40 bg-muted cursor-pointer" 
+                on:click={() => handleRomClick(rom.slug)}
+              >
+                {#if rom.image}
+                  <img 
+                    src={rom.image} 
+                    alt={rom.name} 
+                    class="h-full w-full object-cover transition-transform group-hover:scale-105"
+                  />
+                {:else}
+                  <div class="flex h-full items-center justify-center bg-gradient-to-br from-primary/5 to-primary/20">
+                    <Gamepad2 class="h-12 w-12 text-primary/40" />
+                  </div>
+                {/if}
+                
+                {#if rom.console}
+                  <div class="absolute top-3 right-3">
+                    <Badge variant="secondary" class="font-medium">
+                      {rom.console}
+                    </Badge>
+                  </div>
+                {/if}
+              </div>
+              
+              <CardContent class="p-6">
+                <h3 
+                  class="text-lg font-semibold mb-2 cursor-pointer hover:text-primary transition-colors"
+                  on:click={() => handleRomClick(rom.slug)}
+                >
+                  {rom.name}
+                </h3>
+                
+                <div class="flex flex-wrap gap-2 mb-4">
+                  {#if rom.base_game && rom.base_game.length > 0}
+                    <Badge variant="outline">{rom.base_game[0]}</Badge>
+                  {/if}
+                  
+                  {#if rom.status && rom.status.length > 0}
+                    <Badge variant="outline" class="bg-primary/5">
+                      {rom.status[0]}
+                    </Badge>
+                  {/if}
+                </div>
+                
+                <div class="flex items-center justify-between">
+                  <div class="text-sm text-muted-foreground">
+                    by {rom.author}
+                  </div>
+                  
+                  <CollectionButton 
+                    romId={rom.id} 
+                    isInCollection={rom.isInCollection || false} 
+                    variant="outline" 
+                    size="sm"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          {/each}
+        </div>
+      {/if}
       
       {#if totalPages > 1}
         <div class="my-8 flex justify-center">

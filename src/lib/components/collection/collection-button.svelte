@@ -1,0 +1,84 @@
+<script lang="ts">
+  import { page } from '$app/stores';
+  import { Button } from '$lib/components/ui/button';
+  import { Bookmark, BookmarkCheck, Loader2 } from 'lucide-svelte';
+  import { toast } from 'svelte-sonner';
+  
+  export let romId: number;
+  export let isInCollection: boolean;
+  export let variant: 'default' | 'outline' | 'secondary' | 'ghost' | 'link' | 'destructive' = 'default';
+  export let size: 'default' | 'sm' | 'lg' | 'icon' = 'default';
+  
+  let isLoading = false;
+  
+  async function toggleCollection() {
+    if (!$page.data.user) {
+      toast.error('Please sign in to add ROMs to your collection', {
+        description: 'You need to be signed in to manage your collection',
+        action: {
+          label: 'Sign In',
+          onClick: () => window.location.href = '/auth'
+        }
+      });
+      return;
+    }
+    
+    isLoading = true;
+    
+    try {
+      const endpoint = isInCollection ? '/api/collection/remove' : '/api/collection/add';
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ romId })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        isInCollection = !isInCollection;
+        toast.success(
+          isInCollection ? 'Added to collection' : 'Removed from collection',
+          {
+            description: isInCollection 
+              ? 'ROM has been added to your collection' 
+              : 'ROM has been removed from your collection'
+          }
+        );
+      } else {
+        toast.error('Action failed', {
+          description: result.error || 'Failed to update collection'
+        });
+      }
+    } catch (error) {
+      console.error('Error toggling collection:', error);
+      toast.error('Action failed', {
+        description: 'An unexpected error occurred'
+      });
+    } finally {
+      isLoading = false;
+    }
+  }
+</script>
+
+<Button 
+  {variant} 
+  {size} 
+  on:click={toggleCollection} 
+  disabled={isLoading}
+  aria-label={isInCollection ? "Remove from collection" : "Add to collection"}
+  title={isInCollection ? "Remove from collection" : "Add to collection"}
+>
+  {#if isLoading}
+    <Loader2 class="h-4 w-4 mr-2 animate-spin" />
+    <span>Loading...</span>
+  {:else if isInCollection}
+    <BookmarkCheck class="h-4 w-4 mr-2" />
+    <span>In Collection</span>
+  {:else}
+    <Bookmark class="h-4 w-4 mr-2" />
+    <span>Add to Collection</span>
+  {/if}
+</Button> 

@@ -8,6 +8,7 @@
   import { fly } from "svelte/transition";
   import { quintOut } from "svelte/easing";
   import { isAnyModalOpen } from "$lib/stores/modal";
+  import UserDropdown from "$lib/components/auth/user-dropdown.svelte";
   
   import GithubIcon from '~icons/mdi/github';
   import RedditIcon from '~icons/mdi/reddit';
@@ -85,6 +86,14 @@
       
       <ThemeToggle />
       
+      {#if $page.data.session}
+        <UserDropdown user={$page.data.user} />
+      {:else}
+        <Button variant="outline" size="sm" href="/auth">
+          Sign In
+        </Button>
+      {/if}
+      
       <div class="flex md:hidden">
         <Sheet bind:open>
           <SheetTrigger>
@@ -114,6 +123,29 @@
                   {item.label}
                 </a>
               {/each}
+              
+              {#if $page.data.session}
+                <a
+                  href="/profile"
+                  class="text-lg font-medium transition-colors hover:text-foreground/80 text-foreground/60"
+                  on:click={closeSheet}
+                >
+                  Profile
+                </a>
+                <form method="POST" action="/profile?/signout">
+                  <Button type="submit" variant="ghost" class="w-full justify-start p-0 h-auto text-lg font-medium text-destructive">
+                    Sign out
+                  </Button>
+                </form>
+              {:else}
+                <a
+                  href="/auth"
+                  class="text-lg font-medium transition-colors hover:text-foreground/80 text-foreground/60"
+                  on:click={closeSheet}
+                >
+                  Sign In
+                </a>
+              {/if}
               
               <div class="flex items-center gap-2 mt-4 pt-4 border-t">
                 {#each socialLinks as link}
