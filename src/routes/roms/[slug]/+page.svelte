@@ -145,7 +145,7 @@
                 variant="secondary"
                 class="absolute right-4 top-4 bg-background/80 backdrop-blur-sm px-3 py-1 text-sm"
               >
-                v{rom.version}
+                {rom.version}
               </Badge>
             {/if}
           </div>
