@@ -12,7 +12,11 @@
   
   let isLoading = false;
   
-  async function toggleCollection() {
+  async function toggleCollection(event: Event) {
+    // Stop event propagation to prevent parent click handlers from firing
+    event.stopPropagation();
+    event.preventDefault();
+    
     if (!$page.data.user) {
       toast.error('Please sign in to add ROMs to your collection', {
         description: 'You need to be signed in to manage your collection',
@@ -23,6 +27,8 @@
       });
       return;
     }
+    
+    if (isLoading) return;
     
     isLoading = true;
     

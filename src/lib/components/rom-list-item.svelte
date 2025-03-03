@@ -81,11 +81,11 @@
     </div>
   </Card>
   {:else}
-  <a href="/roms/{rom.slug}">
-    <Card class="overflow-hidden transition-all duration-300 hover:shadow-xl dark:hover:shadow-primary/10">
-      <div class="flex flex-col md:flex-row">
-        <div class="md:w-1/4 lg:w-1/5">
-          <div class="relative aspect-video md:aspect-square w-full overflow-hidden bg-muted">
+  <Card class="overflow-hidden transition-all duration-300 hover:shadow-xl dark:hover:shadow-primary/10">
+    <div class="flex flex-col md:flex-row">
+      <div class="md:w-1/4 lg:w-1/5">
+        <div class="relative aspect-video md:aspect-square w-full overflow-hidden bg-muted">
+          <a href="/roms/{rom.slug}" class="block h-full w-full">
             {#if rom.image}
               <img
                 src={rom.image}
@@ -113,75 +113,77 @@
                 {rom.version}
               </Badge>
             {/if}
-          </div>
+          </a>
         </div>
-        
-        <div class="flex-1 p-4">
-          <div class="space-y-3">
-            <div class="space-y-1">
-              <div class="flex items-center gap-2 justify-between">
+      </div>
+      
+      <div class="flex-1 p-4">
+        <div class="space-y-3">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2 justify-between">
+              <a href="/roms/{rom.slug}" class="block">
                 <h3 class="text-lg font-semibold tracking-tight group-hover:text-primary">
                   {rom.name}
                 </h3>
-                  <CollectionButton 
-                    romId={rom.id} 
-                    isInCollection={rom.isInCollection || false} 
-                    variant="outline" 
-                    size="sm"
-                  />
-              </div>
-              <p class="text-sm text-muted-foreground">
-                by {rom.author? formatRomAuthors(rom.author): 'Unknown'}
-              </p>
+              </a>
+              <CollectionButton 
+                romId={rom.id} 
+                isInCollection={rom.isInCollection || false} 
+                variant="outline" 
+                size="sm"
+              />
             </div>
-            
-            <div class="flex flex-wrap gap-1.5">
-              {#if rom.base_game && rom.base_game.length > 0}
-                {#each rom.base_game as game}
-                  <Badge
-                    variant="outline"
-                    class={cn(
-                      "transition-colors",
-                      "group-hover:border-primary/50 group-hover:bg-primary/5"
-                    )}
-                  >
-                    <Star class="mr-1 h-3 w-3 text-amber-500" />
-                    {game}
-                  </Badge>
-                {/each}
-              {/if}
-            </div>
-            
-            <div class="flex flex-wrap gap-1.5">
-              {#if difficultyLevels.length > 0}
-                {#each difficultyLevels as difficulty}
-                  <Badge
-                    variant="secondary"
-                    class="group-hover:bg-secondary/80"
-                  >
-                    <Gamepad2 class="mr-1 h-3 w-3" />
-                    {difficulty}
-                  </Badge>
-                {/each}
-              {/if}
-            </div>
-            
-            {#if rom.content && rom.content.length > 0}
-              <p class="text-sm text-muted-foreground line-clamp-2 mt-2 whitespace-normal">
-                {cleanContent}
-              </p>
+            <p class="text-sm text-muted-foreground">
+              by {rom.author? formatRomAuthors(rom.author): 'Unknown'}
+            </p>
+          </div>
+          
+          <div class="flex flex-wrap gap-1.5">
+            {#if rom.base_game && rom.base_game.length > 0}
+              {#each rom.base_game as game}
+                <Badge
+                  variant="outline"
+                  class={cn(
+                    "transition-colors",
+                    "group-hover:border-primary/50 group-hover:bg-primary/5"
+                  )}
+                >
+                  <Star class="mr-1 h-3 w-3 text-amber-500" />
+                  {game}
+                </Badge>
+              {/each}
             {/if}
-            
-            <div class="flex items-center justify-between mt-2">
-              <div class="flex items-center gap-2 text-xs text-muted-foreground">
-                <Calendar class="h-3 w-3" />
-                <span>Updated {formattedDate}</span>
-              </div>
+          </div>
+          
+          <div class="flex flex-wrap gap-1.5">
+            {#if difficultyLevels.length > 0}
+              {#each difficultyLevels as difficulty}
+                <Badge
+                  variant="secondary"
+                  class="group-hover:bg-secondary/80"
+                >
+                  <Gamepad2 class="mr-1 h-3 w-3" />
+                  {difficulty}
+                </Badge>
+              {/each}
+            {/if}
+          </div>
+          
+          {#if rom.content && rom.content.length > 0}
+            <p class="text-sm text-muted-foreground line-clamp-2 mt-2 whitespace-normal">
+              {cleanContent}
+            </p>
+          {/if}
+          
+          <div class="flex items-center justify-between mt-2">
+            <div class="flex items-center gap-2 text-xs text-muted-foreground">
+              <Calendar class="h-3 w-3" />
+              <span>Updated {formattedDate}</span>
             </div>
           </div>
         </div>
       </div>
-    </Card>
-  </a>
+    </div>
+  </Card>
   {/if}
 </div>
