@@ -3,6 +3,7 @@ import { twMerge } from "tailwind-merge";
 import { cubicOut } from "svelte/easing";
 import type { TransitionConfig } from "svelte/transition";
 import { browser } from "$app/environment";
+import { PUBLIC_SITE_URL } from '$env/static/public';
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -69,7 +70,6 @@ export function isLocalEnvironment(): boolean {
 	);
 }
 
-
 export function getOptimizedImageUrl(
 	url: string, 
 	width: number,
@@ -91,6 +91,11 @@ export function getOptimizedImageUrl(
 		return `${url}?width=${width}`;
 	}
 	
-	// For production use cloudflare image transformations
+	const isSupabaseStorage = url.includes('supabase.co') || url.includes('supabase.in');
+	
+	if (isSupabaseStorage) {
+		return `${PUBLIC_SITE_URL}/cdn-cgi/image/width=${width},quality=${quality},format=${format},fit=${fit}?url=${encodeURIComponent(url)}`;
+	}
+	
 	return `${url}/cdn-cgi/image/width=${width},quality=${quality},format=${format},fit=${fit}`;
 }
