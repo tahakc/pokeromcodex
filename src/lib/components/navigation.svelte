@@ -12,7 +12,7 @@
   
   import GithubIcon from '~icons/mdi/github';
   import RedditIcon from '~icons/mdi/reddit';
-  import DiscordIcon from '~icons/mdi/discord';
+  import DiscordIcon from '~icons/fa-brands/discord';
   
   let open = false;
   

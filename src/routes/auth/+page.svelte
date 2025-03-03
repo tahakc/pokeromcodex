@@ -4,7 +4,7 @@
   import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card'
   import { Separator } from '$lib/components/ui/separator'
   import GithubIcon from '~icons/mdi/github';
-  import DiscordIcon from '~icons/mdi/discord';
+  import DiscordIcon from '~icons/fa-brands/discord';
   import { enhance } from '$app/forms'
 
   let isLoading = false

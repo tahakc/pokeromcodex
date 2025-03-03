@@ -12,7 +12,6 @@
     let error = url.searchParams.get('error');
     let errorCode = url.searchParams.get('error_code');
     let errorDescription = url.searchParams.get('error_description');
-    let linked = url.searchParams.get('linked');
     
     if (!error && url.hash) {
       const hashParams = new URLSearchParams(url.hash.substring(1));
@@ -22,14 +21,10 @@
       console.log("Hash parameters:", Object.fromEntries(hashParams.entries()));
     }
     
-    console.log("Processing auth callback:", { error, errorCode, errorDescription, linked });
+    console.log("Processing auth callback:", { error, errorCode, errorDescription });
     
     if (error) {
       let errorMessage = errorDescription || error;
-      
-      if (error === 'server_error' && errorCode === 'identity_already_exists') {
-        errorMessage = 'This identity is already linked to another account';
-      }
       
       console.log("Showing auth error toast:", errorMessage);
       setTimeout(() => {
@@ -40,8 +35,11 @@
           goto('/profile');
         }, 500);
       }, 500);
-    } else if (linked) {
-      toast.success(`Successfully linked ${linked} account`);
+    } else {
+      // Automatically redirect to profile on successful sign-in
+      setTimeout(() => {
+        goto('/profile');
+      }, 1000);
     }
   });
 </script>
