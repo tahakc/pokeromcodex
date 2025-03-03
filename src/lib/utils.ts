@@ -94,8 +94,8 @@ export function getOptimizedImageUrl(
 	const isSupabaseStorage = url.includes('supabase.co') || url.includes('supabase.in');
 	
 	if (isSupabaseStorage) {
-		return `${PUBLIC_SITE_URL}/cdn-cgi/image/width=${width},quality=${quality},format=${format},fit=${fit}?url=${encodeURIComponent(url)}`;
+		return `${PUBLIC_SITE_URL}/cdn-cgi/image/width=${width},quality=${quality},format=${format},fit=${fit}/${encodeURIComponent(url)}`;
 	}
 	
-	return `${url}/cdn-cgi/image/width=${width},quality=${quality},format=${format},fit=${fit}`;
+	return `${PUBLIC_SITE_URL}/cdn-cgi/image/width=${width},quality=${quality},format=${format},fit=${fit}/${encodeURIComponent(url)}`;
 }
