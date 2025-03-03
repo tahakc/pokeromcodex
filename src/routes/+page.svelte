@@ -203,8 +203,10 @@
           <h1 class="text-4xl font-bold tracking-tight sm:text-6xl">
             PokeRomCodex
           </h1>
-          <p class="mt-6 text-lg leading-8 text-muted-foreground">
-            Discover and explore the best Pokémon ROM hacks. Your gateway to enhanced Pokémon adventures.
+          <p class="mt-6 text-lg leading-8 text-muted-foreground hyphens-none">
+            Discover and explore the best Pokémon ROM hacks.
+            <br>
+            Your gateway to enhanced Pokémon adventures.
           </p>
         </div>
 
