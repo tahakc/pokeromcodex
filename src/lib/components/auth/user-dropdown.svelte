@@ -22,12 +22,13 @@
 
   let open = false
   
-  // Add a watcher for the open state
+  // Immediately reset padding when dropdown opens
   $: if (open && typeof document !== 'undefined') {
-    // Set timeout to run after the modal's open effect
-    setTimeout(() => {
-      document.body.style.paddingRight = '0';
-    }, 0);
+    document.body.style.paddingRight = '0px';
+    // Use requestAnimationFrame for browser paint cycle alignment
+    requestAnimationFrame(() => {
+      document.body.style.paddingRight = '0px';
+    });
   }
   
   function getInitials(name: string) {
@@ -77,3 +78,9 @@
     </form>
   </DropdownMenuContent>
 </DropdownMenu> 
+<style>
+  /* Add specific CSS to override any modal padding behaviors */
+  :global(body.modal-open) {
+    padding-right: 0 !important;
+  }
+</style>

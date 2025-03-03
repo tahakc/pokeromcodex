@@ -5,6 +5,7 @@ export const isAnyModalOpen = writable<boolean>(false);
 
 let scrollPosition = 0;
 let scrollbarWidth = 0;
+let observer: MutationObserver | null = null;
 
 export function measureScrollbarWidth(): number {
   if (!browser) return 0;
@@ -44,8 +45,8 @@ export function applyBodyStyles(isOpen: boolean): void {
     body.style.bottom = '0';
     body.style.width = '100%';
     
-    const scrollbarCompensation = `${measureScrollbarWidth()}px`;
-    body.style.paddingRight = scrollbarCompensation;
+    // Set padding-right to 0 directly
+    body.style.paddingRight = '0';
     
     html.classList.add('modal-open');
     body.classList.add('modal-open');
@@ -67,6 +68,23 @@ export function applyBodyStyles(isOpen: boolean): void {
   }
 }
 
+// Initialize an observer to prevent padding-right
 if (browser) {
+  observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === 'attributes' && 
+          mutation.attributeName === 'style' &&
+          document.body.style.paddingRight) {
+        document.body.style.paddingRight = '0';
+      }
+    });
+  });
+
+  // Start observing the document body for style changes
+  observer.observe(document.body, { 
+    attributes: true, 
+    attributeFilter: ['style'] 
+  });
+  
   isAnyModalOpen.subscribe(applyBodyStyles);
-} 
+}
