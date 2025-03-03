@@ -99,3 +99,35 @@ export function getOptimizedImageUrl(
 	
 	return `${PUBLIC_SITE_URL}/cdn-cgi/image/width=${width},quality=${quality},format=${format},fit=${fit}/${url}`;
 }
+
+export function formatRomAuthors(authors: string | undefined): string {
+	if (!authors) return "";
+	let romAuthors = [authors]
+
+	// rom.author can be a ["list", "of", "authors"]
+	// or it can be just a plain string, so we need
+	// to format it accordingly
+	if (
+		romAuthors.length == 1 &&
+		/^\["[^"]+"(?:,\s*"[^"]+")*\]$/.test(romAuthors[0])
+	) {
+		// if this is a list of authors then build a list
+		let authorList = romAuthors[0].slice(1,-1).split(",")
+		let newAuthors: string[] = []
+		authorList.forEach(e => {
+			newAuthors.push(e.trim().slice(1,-1))
+		});
+		// then replace authors with it
+		romAuthors = newAuthors
+	}
+
+	// build the final string
+	let formattedAuthors = ""
+	for (let i = 0; i < romAuthors.length; i++) {
+		formattedAuthors += romAuthors[i]
+		if (i < romAuthors.length - 1) {
+			formattedAuthors += ", "
+		}
+	}
+	return formattedAuthors
+}

@@ -1,6 +1,7 @@
 import { getRomBySlug, nameToSlug } from '$lib/services/rom-service';
 import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { formatRomAuthors } from '$lib/utils';
 
 export const GET: RequestHandler = async ({ params, url }) => {
   const { slug } = params;
@@ -21,7 +22,7 @@ export const GET: RequestHandler = async ({ params, url }) => {
     const badgeColor = getBadgeColor(bgColor, textColor);
     
     const title = rom.name;
-    const author = rom.author || 'Unknown Author';
+    const author = rom.author? formatRomAuthors(rom.author): 'Unknown Author';
     const baseGame = rom.base_game?.[0] || 'Pokemon';
     const features = rom.features?.qol || [];
     const featuresList = features.slice(0, 3).join(', ');

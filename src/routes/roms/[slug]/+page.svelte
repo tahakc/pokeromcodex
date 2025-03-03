@@ -13,6 +13,7 @@
   import DOMPurify from 'dompurify';
   import SeoHead from "$lib/components/seo/seo-head.svelte";
   import CollectionButton from "$lib/components/collection/collection-button.svelte";
+	import { formatRomAuthors } from "$lib/utils.js";
 
   export let data;
   const rom: Rom = data.rom;
@@ -154,7 +155,7 @@
             <h1 class="text-4xl font-bold tracking-tight md:text-5xl break-words mb-3">{rom.name}</h1>
             <div class="flex flex-wrap items-center gap-3">
               {#if rom.author}
-                <p class="text-lg text-muted-foreground">by {rom.author}</p>
+                <p class="text-lg text-muted-foreground">by {formatRomAuthors(rom.author)}</p>
               {/if}
               {#if rom.base_game && rom.base_game.length > 0}
                 <div class="flex flex-wrap gap-2">

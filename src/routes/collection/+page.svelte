@@ -14,6 +14,7 @@
   import { onMount } from 'svelte'
   import RomGrid from '$lib/components/rom-grid.svelte'
   import RomListView from '$lib/components/rom-list-view.svelte'
+  import { formatRomAuthors } from '$lib/utils'
   
   let { data } = $props();
   
@@ -305,7 +306,7 @@
                   
                   <div class="flex items-center justify-between">
                     <div class="text-sm text-muted-foreground">
-                      by {rom.author}
+                      by {rom.author? formatRomAuthors(rom.author): 'Unknown'}
                     </div>
                     
                     <CollectionButton 

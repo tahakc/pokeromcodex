@@ -3,7 +3,7 @@
   import type { Rom } from "$lib/types";
   import { Card, CardContent, CardFooter, CardHeader } from "$lib/components/ui/card";
   import { Badge } from "$lib/components/ui/badge";
-  import { cn, getOptimizedImageUrl } from "$lib/utils";
+  import { cn, formatRomAuthors, getOptimizedImageUrl } from "$lib/utils";
   import { Gamepad2, Star, Sparkles } from "lucide-svelte";
   import CollectionButton from "$lib/components/collection/collection-button.svelte";
 
@@ -94,7 +94,7 @@
             />
           </div>
           <p class="line-clamp-1 text-sm text-muted-foreground">
-            by {rom.author || 'Unknown'}
+            by {rom.author? formatRomAuthors(rom.author): 'Unknown'}
           </p>
         </div>
         <div class="flex flex-wrap gap-1.5">

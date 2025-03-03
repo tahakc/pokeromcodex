@@ -1,4 +1,5 @@
 import type { Rom } from '$lib/types';
+import { formatRomAuthors } from '$lib/utils';
 
 export function generateOgImageUrl(rom: Rom & { slug?: string }, baseUrl: string): string {
   if (!rom) return `${baseUrl}/api/og`;
@@ -63,7 +64,7 @@ export function generateJsonLd(rom: Rom & { slug?: string }, url: string): strin
     url: url,
     author: {
       '@type': 'Person',
-      name: rom.author || 'Unknown'
+      name: rom.author? formatRomAuthors(rom.author): 'Unknown'
     },
     datePublished: rom.date_updated || undefined,
     gamePlatform: rom.console || 'Various',
