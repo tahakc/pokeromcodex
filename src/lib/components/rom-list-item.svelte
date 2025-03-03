@@ -1,12 +1,11 @@
 <script lang="ts">
   import { format, parse } from "date-fns";
   import type { Rom } from "$lib/types";
-  import { Card, CardContent } from "$lib/components/ui/card";
+  import { Card } from "$lib/components/ui/card";
   import { Badge } from "$lib/components/ui/badge";
   import { cn, formatRomAuthors } from "$lib/utils";
   import { Gamepad2, Star, Sparkles, Calendar } from "lucide-svelte";
   import CollectionButton from "$lib/components/collection/collection-button.svelte";
-  import { browser } from '$app/environment';
 
   export let rom: Rom & { slug: string; isLoading?: boolean; isInCollection?: boolean };
   export let displayRoms: (Rom & { slug: string; isLoading?: boolean })[] = [];
@@ -16,6 +15,18 @@
     : "Date unknown";
     
   $: difficultyLevels = rom?.features?.gameplay_difficulty || [];
+  
+  // Track image loading state
+  let imageLoaded = false;
+  
+  function handleImageLoaded() {
+    imageLoaded = true;
+  }
+  
+  // Reset loading state when rom changes
+  $: if (rom) {
+    imageLoaded = false;
+  }
   
   // Function to strip markdown and HTML tags from content
   function stripMarkdown(text: string): string {
@@ -87,6 +98,13 @@
         <div class="relative aspect-video md:aspect-square w-full overflow-hidden bg-muted">
           <a href="/roms/{rom.slug}" class="block h-full w-full">
             {#if rom.image}
+              <!-- Loading spinner that shows while image is loading -->
+              {#if !imageLoaded}
+                <div class="absolute inset-0 flex items-center justify-center z-10 bg-muted">
+                  <div class="h-10 w-10 rounded-full border-4 border-primary/30 border-t-primary animate-spin"></div>
+                </div>
+              {/if}
+              
               <img
                 src={rom.image}
                 alt={rom.name}
@@ -99,6 +117,7 @@
                         ${rom.image}?width=1024 1024w`}
                 sizes="(max-width: 640px) 100vw, 25vw"
                 fetchpriority={rom.slug === displayRoms[0]?.slug ? "high" : "auto"}
+                on:load={handleImageLoaded}
               />
             {:else}
               <div class="flex h-full items-center justify-center">

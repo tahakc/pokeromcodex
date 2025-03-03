@@ -6,6 +6,7 @@
   import { cn, formatRomAuthors, getOptimizedImageUrl } from "$lib/utils";
   import { Gamepad2, Star, Sparkles } from "lucide-svelte";
   import CollectionButton from "$lib/components/collection/collection-button.svelte";
+  import { onMount } from "svelte";
 
   export let rom: Rom & { slug: string; isLoading?: boolean; isInCollection?: boolean };
   export let displayRoms: (Rom & { slug: string; isLoading?: boolean })[] = [];
@@ -15,6 +16,18 @@
     : "Date unknown";
     
   $: difficultyLevels = rom?.features?.gameplay_difficulty || [];
+  
+  // Track image loading state
+  let imageLoaded = false;
+  
+  function handleImageLoaded() {
+    imageLoaded = true;
+  }
+  
+  // Reset loading state when rom changes
+  $: if (rom) {
+    imageLoaded = false;
+  }
 </script>
 
 <div class="group block">
@@ -48,6 +61,13 @@
       <CardHeader class="p-0">
         <div class="relative aspect-video w-full overflow-hidden bg-muted">
           {#if rom.image}
+            <!-- Loading spinner that shows while image is loading -->
+            {#if !imageLoaded}
+              <div class="absolute inset-0 flex items-center justify-center z-10 bg-muted">
+                <div class="h-10 w-10 rounded-full border-4 border-primary/30 border-t-primary animate-spin"></div>
+              </div>
+            {/if}
+            
             <img
               src={getOptimizedImageUrl(rom.image, 768)}
               alt={rom.name}
@@ -63,6 +83,7 @@
                      (max-width: 1024px) 33vw,
                      25vw"
               fetchpriority={rom.slug === displayRoms[0]?.slug || rom.slug === displayRoms[1]?.slug ? "high" : "auto"}
+              on:load={handleImageLoaded}
             />
           {:else}
             <div class="flex h-full items-center justify-center">
@@ -83,8 +104,8 @@
     <CardContent class="space-y-2.5 p-4 flex-grow">
       <div class="space-y-1.5">
         <div class="flex items-center">
-          <a href="/roms/{rom.slug}" class="flex-grow min-w-0 pr-2">
-            <h3 class="line-clamp-1 text-lg font-semibold tracking-tight group-hover:text-primary">
+          <a href="/roms/{rom.slug}" class="flex-grow min-w-0 pr-2 max-w-[85%]">
+            <h3 class="truncate text-lg font-semibold tracking-tight group-hover:text-primary" title={rom.name}>
               {rom.name}
             </h3>
           </a>
