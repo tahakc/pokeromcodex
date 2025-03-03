@@ -2,6 +2,7 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { cubicOut } from "svelte/easing";
 import type { TransitionConfig } from "svelte/transition";
+import { browser } from "$app/environment";
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -60,3 +61,36 @@ export const flyAndScale = (
 		easing: cubicOut
 	};
 };
+
+export function isLocalEnvironment(): boolean {
+	return browser && (
+		window.location.hostname === 'localhost' || 
+		window.location.hostname === '127.0.0.1'
+	);
+}
+
+
+export function getOptimizedImageUrl(
+	url: string, 
+	width: number,
+	options?: {
+		quality?: number,
+		format?: 'auto' | 'webp' | 'avif',
+		fit?: 'cover' | 'contain' | 'fill' | 'scale-down'
+	}
+): string {
+	if (!url) return "";
+	
+	const {
+		quality = 80,
+		format = 'auto',
+		fit = 'cover'
+	} = options || {};
+	
+	if (isLocalEnvironment()) {
+		return `${url}?width=${width}`;
+	}
+	
+	// For production use cloudflare image transformations
+	return `${url}/cdn-cgi/image/width=${width},quality=${quality},format=${format},fit=${fit}`;
+}

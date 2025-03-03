@@ -16,6 +16,7 @@
   import { Badge } from "$lib/components/ui/badge";
   import { Gamepad2, Star } from "lucide-svelte";
   import CollectionButton from "$lib/components/collection/collection-button.svelte";
+  import { getOptimizedImageUrl } from "$lib/utils";
 
   let { data } = $props();
   
@@ -165,7 +166,7 @@
   {#if filteredRoms && filteredRoms.length > 0}
     {#each filteredRoms.slice(0, 4) as rom, index}
       {#if rom.image}
-        <link rel="preload" href={`${rom.image}?width=${index < 2 ? 1024 : 768}`} as="image" fetchpriority={index < 2 ? "high" : "auto"} />
+        <link rel="preload" href={getOptimizedImageUrl(rom.image, index < 2 ? 1024 : 768)} as="image" fetchpriority={index < 2 ? "high" : "auto"} />
       {/if}
     {/each}
   {/if}
@@ -318,7 +319,7 @@
               >
                 {#if rom.image}
                   <img 
-                    src={rom.image} 
+                    src={getOptimizedImageUrl(rom.image, 640)} 
                     alt={rom.name} 
                     class="h-full w-full object-cover transition-transform group-hover:scale-105"
                   />

@@ -3,7 +3,7 @@
   import type { Rom } from "$lib/types";
   import { Card, CardContent, CardFooter, CardHeader } from "$lib/components/ui/card";
   import { Badge } from "$lib/components/ui/badge";
-  import { cn } from "$lib/utils";
+  import { cn, getOptimizedImageUrl } from "$lib/utils";
   import { Gamepad2, Star, Sparkles } from "lucide-svelte";
 
   export let rom: Rom & { slug: string; isLoading?: boolean };
@@ -48,15 +48,15 @@
         <div class="relative aspect-video w-full overflow-hidden bg-muted">
           {#if rom.image}
             <img
-              src={rom.image}
+              src={getOptimizedImageUrl(rom.image, 768)}
               alt={rom.name}
               class="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               loading={rom.slug === displayRoms[0]?.slug || rom.slug === displayRoms[1]?.slug || rom.slug === displayRoms[2]?.slug || rom.slug === displayRoms[3]?.slug ? "eager" : "lazy"}
               decoding={rom.slug === displayRoms[0]?.slug || rom.slug === displayRoms[1]?.slug ? "sync" : "async"}
-              srcset={`${rom.image}?width=384 384w,
-                      ${rom.image}?width=640 640w,
-                      ${rom.image}?width=768 768w,
-                      ${rom.image}?width=1024 1024w`}
+              srcset={`${getOptimizedImageUrl(rom.image, 384)} 384w,
+                      ${getOptimizedImageUrl(rom.image, 640)} 640w,
+                      ${getOptimizedImageUrl(rom.image, 768)} 768w,
+                      ${getOptimizedImageUrl(rom.image, 1024)} 1024w`}
               sizes="(max-width: 640px) 100vw,
                      (max-width: 768px) 50vw,
                      (max-width: 1024px) 33vw,
