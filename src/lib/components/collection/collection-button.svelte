@@ -3,6 +3,9 @@
   import { Button } from '$lib/components/ui/button';
   import { Bookmark, BookmarkCheck, Loader2 } from 'lucide-svelte';
   import { toast } from 'svelte-sonner';
+  import { invalidate } from '$app/navigation';
+  import { onMount } from 'svelte';
+  import { collectionStore } from '$lib/stores/collection';
   
   export let romId: number;
   export let isInCollection: boolean;
@@ -12,8 +15,18 @@
   
   let isLoading = false;
   
+  // Check store directly when component is mounted
+  onMount(() => {
+    const isInStore = $collectionStore.has(romId);
+    
+    // If the prop and store don't match, prioritize the store value
+    if (isInStore !== isInCollection) {
+      isInCollection = isInStore;
+    }
+  });
+  
   async function toggleCollection(event: Event) {
-    // Stop event propagation to prevent parent click handlers from firing
+    // Stop event propagation to prevent parent click handlers
     event.stopPropagation();
     event.preventDefault();
     
@@ -32,8 +45,13 @@
     
     isLoading = true;
     
+    // Double check with the store to ensure we have the latest state
+    const currentlyInCollection = $collectionStore.has(romId);
+    
+    // Always use the store's state to determine which endpoint to use
+    const endpoint = currentlyInCollection ? '/api/collection/remove' : '/api/collection/add';
+    
     try {
-      const endpoint = isInCollection ? '/api/collection/remove' : '/api/collection/add';
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
@@ -45,11 +63,23 @@
       const result = await response.json();
       
       if (result.success) {
-        isInCollection = !isInCollection;
+        // Update local state based on current operation
+        isInCollection = !currentlyInCollection;
+        
+        // Update the collection store
+        if (!currentlyInCollection) {
+          collectionStore.add(romId);
+        } else {
+          collectionStore.remove(romId);
+        }
+        
+        // Invalidate to ensure data is refreshed everywhere
+        await invalidate('app:collection');
+        
         toast.success(
-          isInCollection ? 'Added to collection' : 'Removed from collection',
+          !currentlyInCollection ? 'Added to collection' : 'Removed from collection',
           {
-            description: isInCollection 
+            description: !currentlyInCollection 
               ? 'ROM has been added to your collection' 
               : 'ROM has been removed from your collection'
           }
@@ -78,6 +108,8 @@
   aria-label={isInCollection ? "Remove from collection" : "Add to collection"}
   title={isInCollection ? "Remove from collection" : "Add to collection"}
   class={`${size === 'icon' ? "h-8 w-8 p-0" : ""} ${buttonClass}`}
+  data-rom-id={romId}
+  data-in-collection={isInCollection}
 >
   {#if isLoading}
     <Loader2 class={size === 'icon' ? "h-4 w-4 animate-spin" : "h-4 w-4 mr-2 animate-spin"} />

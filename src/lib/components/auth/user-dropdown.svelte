@@ -19,6 +19,16 @@
   
   const name = user?.user_metadata?.full_name || user?.user_metadata?.name || 'User'
   const avatarUrl = user?.user_metadata?.avatar_url
+
+  let open = false
+  
+  // Add a watcher for the open state
+  $: if (open && typeof document !== 'undefined') {
+    // Set timeout to run after the modal's open effect
+    setTimeout(() => {
+      document.body.style.paddingRight = '0';
+    }, 0);
+  }
   
   function getInitials(name: string) {
     return name
@@ -38,7 +48,7 @@
   }
 </script>
 
-<DropdownMenu>
+<DropdownMenu bind:open>
   <DropdownMenuTrigger>
     <Button variant="ghost" class="relative h-8 w-8 rounded-full">
       <Avatar class="h-8 w-8">

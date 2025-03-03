@@ -9,6 +9,11 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
+// Check if the code is running in a browser environment
+export function isBrowser(): boolean {
+  return typeof window !== 'undefined';
+}
+
 type FlyAndScaleParams = {
 	y?: number;
 	x?: number;

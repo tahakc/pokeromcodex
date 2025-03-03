@@ -48,6 +48,7 @@ export const romSchema = z.object({
   date_updated: z.string().nullable().optional(),
   features: featuresSchema,
   links: z.array(z.string()).nullable().optional(),
+  isInCollection: z.boolean().optional(),
 });
 
 export type Rom = z.infer<typeof romSchema>;
@@ -61,4 +62,4 @@ export type SearchFilters = {
 
 export type RomFrontmatter = Rom & {
   slug: string;
-}; 
+};

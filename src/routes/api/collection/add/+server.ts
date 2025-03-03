@@ -13,6 +13,30 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       return json({ success: false, error: 'ROM ID is required' }, { status: 400 });
     }
 
+    // First check if the item is already in the collection
+    const { data: existingItem, error: checkError } = await locals.supabase
+      .from('collections')
+      .select('id')
+      .eq('user_id', locals.user.id)
+      .eq('rom_id', romId)
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 means no rows returned
+      console.error('Error checking collection:', checkError);
+      return json({ success: false, error: 'Failed to check collection status' }, { status: 400 });
+    }
+
+    // If item already exists, return success without attempting to add again
+    if (existingItem) {
+      console.log(`ROM ${romId} already in collection for user ${locals.user.id}`);
+      return json({ 
+        success: true, 
+        alreadyExists: true,
+        message: 'ROM already in collection' 
+      });
+    }
+
+    // Add the item to the collection
     const { error } = await locals.supabase
       .from('collections')
       .insert({
@@ -21,16 +45,17 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       });
 
     if (error) {
-      if (error.code === '23505') {
-        return json({ success: false, error: 'This ROM is already in your collection' }, { status: 400 });
-      }
       console.error('Error adding ROM to collection:', error);
       return json({ success: false, error: 'Failed to add ROM to collection' }, { status: 400 });
     }
 
-    return json({ success: true });
+    console.log(`ROM ${romId} added to collection for user ${locals.user.id}`);
+    return json({ 
+      success: true,
+      message: 'ROM added to collection'
+    });
   } catch (error) {
     console.error('Error adding ROM to collection:', error);
     return json({ success: false, error: 'An unexpected error occurred' }, { status: 500 });
   }
-}; 
+};

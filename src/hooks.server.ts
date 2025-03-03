@@ -38,6 +38,13 @@ const supabase: Handle = async ({ event, resolve }) => {
     filterSerializedResponseHeaders(name) {
       return name === 'content-range' || name === 'x-supabase-api-version'
     },
+    transformPageChunk: ({ html }) => {
+      // This ensures proper serialization of boolean values during SSR
+      return html.replace(
+        /isInCollection=(false|true)/g, 
+        (match, value) => `isInCollection={${value}}`
+      );
+    }
   })
 }
 

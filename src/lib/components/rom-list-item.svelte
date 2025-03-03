@@ -128,7 +128,7 @@
               </a>
               <CollectionButton 
                 romId={rom.id} 
-                isInCollection={rom.isInCollection || false} 
+                isInCollection={rom.isInCollection === true} 
                 variant="outline" 
                 size="sm"
               />

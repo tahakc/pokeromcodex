@@ -37,15 +37,12 @@
   
   let filteredCollection = $derived(collection.filter(item => {
     const matchesSearch = searchQuery === '' || 
-      item.rom.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (item.rom.base_game && item.rom.base_game.some((game: string) => 
-        game.toLowerCase().includes(searchQuery.toLowerCase())
-      ));
+      item.name.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesFilter = activeFilter === 'all' || 
-      (activeFilter === 'gba' && item.rom.console === 'GBA') ||
-      (activeFilter === 'nds' && item.rom.console === 'NDS') ||
-      (activeFilter === 'other' && item.rom.console !== 'GBA' && item.rom.console !== 'NDS');
+      (activeFilter === 'gba' && item.console === 'GBA') ||
+      (activeFilter === 'nds' && item.console === 'NDS') ||
+      (activeFilter === 'other' && item.console !== 'GBA' && item.console !== 'NDS');
     
     return matchesSearch && matchesFilter;
   }));
@@ -113,7 +110,7 @@
           <p class="text-2xl font-bold">
             {collection.length > 0 
               ? (() => {
-                  const consoles = collection.map(item => item.rom.console);
+                  const consoles = collection.map(item => item.console);
                   const counts = consoles.reduce<Record<string, number>>((acc, console) => {
                     acc[console] = (acc[console] || 0) + 1;
                     return acc;
@@ -137,7 +134,7 @@
           <p class="text-sm font-medium text-muted-foreground">Last Added</p>
           <p class="text-2xl font-bold">
             {collection.length > 0 
-              ? new Date(collection[0].added_at).toLocaleDateString('en-US', {
+              ? new Date(collection[0].addedAt).toLocaleDateString('en-US', {
                   month: 'short',
                   day: 'numeric'
                 })
@@ -226,11 +223,66 @@
         </div>
         
         {#if filteredCollection.length > 0}
-          {#if layoutMode === 'grid'}
-            <RomGrid roms={filteredCollection.map(item => item.rom)} />
-          {:else}
-            <RomListView roms={filteredCollection} />
-          {/if}
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {#each filteredCollection as item}
+              <Card class="h-full flex flex-col hover:shadow-lg transition-shadow">
+                <a href="/roms/{item.slug || slugify(item.name)}">
+                  <CardHeader class="p-0">
+                    <div class="relative aspect-video w-full overflow-hidden bg-muted">
+                      {#if item.image}
+                        <img
+                          src={getOptimizedImageUrl(item.image, 640)}
+                          alt={item.name}
+                          class="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      {:else}
+                        <div class="flex h-full items-center justify-center">
+                          <Gamepad2 class="h-12 w-12 text-muted-foreground/50" />
+                        </div>
+                      {/if}
+                    </div>
+                  </CardHeader>
+                </a>
+                <CardContent class="p-4 space-y-4 flex-grow">
+                  <div>
+                    <a href="/roms/{item.slug || slugify(item.name)}" class="block">
+                      <h3 class="line-clamp-1 text-lg font-semibold text-card-foreground hover:text-primary transition-colors">{item.name}</h3>
+                    </a>
+                    <p class="text-sm text-muted-foreground">
+                      by {item.author? formatRomAuthors(item.author): 'Unknown'}
+                    </p>
+                  </div>
+
+                  <div class="flex flex-wrap gap-2">
+                    {#if item.console}
+                      <Badge variant="outline" class="bg-primary/5">
+                        {item.console}
+                      </Badge>
+                    {/if}
+                    {#if item.status && item.status.length > 0}
+                      <Badge variant="outline" class="bg-primary/5">
+                        {item.status[0]}
+                      </Badge>
+                    {/if}
+                  </div>
+                </CardContent>
+                <CardFooter class="p-4 pt-0 flex items-center justify-between">
+                  <div class="text-sm text-muted-foreground">
+                    Added: {item.addedAt ? formatDate(item.addedAt) : 'Recently'}
+                  </div>
+
+                  <CollectionButton 
+                    romId={item.id} 
+                    isInCollection={true} 
+                    variant="ghost" 
+                    size="icon"
+                  />
+                </CardFooter>
+              </Card>
+            {/each}
+          </div>
         {:else}
           <div class="flex flex-col items-center justify-center py-16 text-center">
             <div class="bg-primary/10 p-6 rounded-full mb-6">
@@ -311,7 +363,7 @@
                     
                     <CollectionButton 
                       romId={rom.id} 
-                      isInCollection={false} 
+                      isInCollection={rom.isInCollection} 
                       variant="outline" 
                       size="sm"
                     />

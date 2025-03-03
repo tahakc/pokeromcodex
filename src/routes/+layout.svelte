@@ -60,7 +60,7 @@
 <div class="min-h-screen bg-background antialiased modal-open-container">
 	<Navigation />
 	<div class="relative overflow-hidden">
-		<slot />
+		{@render children()}
 	</div>
 	<Toaster 
 		position="top-center" 

@@ -25,9 +25,14 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     }
   }
 
+  // Set the isInCollection property directly on the ROM object
+  rom.isInCollection = isInUserCollection;
+  
+  console.log(`[DEBUG] ROM Detail Page: Loaded rom ${rom.id}, isInCollection=${rom.isInCollection}`);
+
   return {
     rom,
-    isInCollection: isInUserCollection,
+    isInCollection: isInUserCollection, // Keep this for backward compatibility
     meta: {
       title: `${rom.name} - PokeRomCodex`,
       description: rom.content && rom.content.length > 0 
@@ -35,4 +40,4 @@ export const load: PageServerLoad = async ({ params, locals }) => {
         : `Details about ${rom.name} ROM hack for ${rom.console || 'various consoles'}.`
     }
   };
-}; 
+};

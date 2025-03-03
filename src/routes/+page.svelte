@@ -325,7 +325,7 @@
       {#if layoutMode === 'grid'}
         <RomGrid roms={filteredRoms} {isLoading} />
       {:else}
-        <RomListView roms={filteredRoms.map(rom => ({ ...rom, slug: rom.slug }))} {isLoading} />
+        <RomListView roms={filteredRoms.map((rom: Rom & { slug: string }) => ({ ...rom, slug: rom.slug }))} {isLoading} />
       {/if}
       
       {#if totalPages > 1}
