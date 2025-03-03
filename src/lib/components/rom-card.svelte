@@ -5,8 +5,9 @@
   import { Badge } from "$lib/components/ui/badge";
   import { cn, getOptimizedImageUrl } from "$lib/utils";
   import { Gamepad2, Star, Sparkles } from "lucide-svelte";
+  import CollectionButton from "$lib/components/collection/collection-button.svelte";
 
-  export let rom: Rom & { slug: string; isLoading?: boolean };
+  export let rom: Rom & { slug: string; isLoading?: boolean; isInCollection?: boolean };
   export let displayRoms: (Rom & { slug: string; isLoading?: boolean })[] = [];
 
   $: formattedDate = rom.date_updated && !rom.isLoading
@@ -18,13 +19,13 @@
 
 <div class="group block">
   {#if rom.isLoading}
-  <Card class="overflow-hidden transition-all duration-300 animate-pulse">
+  <Card class="overflow-hidden transition-all duration-300 animate-pulse h-full flex flex-col">
     <CardHeader class="p-0">
       <div class="relative aspect-video w-full overflow-hidden bg-muted">
         <div class="absolute inset-0 bg-muted"></div>
       </div>
     </CardHeader>
-    <CardContent class="space-y-2.5 p-4">
+    <CardContent class="space-y-2.5 p-4 flex-grow">
       <div class="space-y-1.5">
         <div class="h-6 w-3/4 rounded bg-muted"></div>
         <div class="h-4 w-1/2 rounded bg-muted"></div>
@@ -43,7 +44,7 @@
   </Card>
   {:else}
   <a href="/roms/{rom.slug}">
-    <Card class="overflow-hidden transition-all duration-300 hover:shadow-xl dark:hover:shadow-primary/10">
+    <Card class="overflow-hidden transition-all duration-300 hover:shadow-xl dark:hover:shadow-primary/10 h-full flex flex-col">
       <CardHeader class="p-0">
         <div class="relative aspect-video w-full overflow-hidden bg-muted">
           {#if rom.image}
@@ -78,11 +79,20 @@
           {/if}
         </div>
       </CardHeader>
-      <CardContent class="space-y-2.5 p-4">
+      <CardContent class="space-y-2.5 p-4 flex-grow">
         <div class="space-y-1.5">
-          <h3 class="line-clamp-1 text-lg font-semibold tracking-tight group-hover:text-primary">
-            {rom.name}
-          </h3>
+          <div class="flex items-center">
+            <h3 class="line-clamp-1 text-lg font-semibold tracking-tight group-hover:text-primary pr-2 min-w-0 flex-grow">
+              {rom.name}
+            </h3>
+            <CollectionButton 
+              romId={rom.id} 
+              isInCollection={rom.isInCollection || false} 
+              variant="ghost" 
+              size="icon"
+              buttonClass="ml-auto"
+            />
+          </div>
           <p class="line-clamp-1 text-sm text-muted-foreground">
             by {rom.author || 'Unknown'}
           </p>
@@ -127,7 +137,7 @@
           {/if}
         </div>
       </CardContent>
-      <CardFooter class="p-4 pt-0">
+      <CardFooter class="p-4 pt-0 mt-auto">
         <div class="flex items-center gap-2 text-xs text-muted-foreground">
           <Sparkles class="h-3 w-3" />
           <span>Updated {formattedDate}</span>
@@ -136,4 +146,4 @@
     </Card>
   </a>
   {/if}
-</div> 
+</div>

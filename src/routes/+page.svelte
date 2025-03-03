@@ -1,13 +1,12 @@
 <script lang="ts">
   import RomGrid from "$lib/components/rom-grid.svelte";
+  import RomListView from "$lib/components/rom-list-view.svelte";
   import Search from "$lib/components/search/search.svelte";
   import type { Rom } from "$lib/types";
   import { fade, fly } from "svelte/transition";
-  import { Button } from "$lib/components/ui/button";
   import { ChevronLeft, ChevronRight, LayoutGrid, LayoutList } from "lucide-svelte";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
-  import { isAnyModalOpen } from "$lib/stores/modal";
   import SeoHead from "$lib/components/seo/seo-head.svelte";
   import { browser } from "$app/environment";
   import { onMount } from "svelte";
@@ -17,15 +16,16 @@
   import { Gamepad2, Star } from "lucide-svelte";
   import CollectionButton from "$lib/components/collection/collection-button.svelte";
   import { getOptimizedImageUrl } from "$lib/utils";
+  import { Button } from "$lib/components/ui/button";
+  import { PUBLIC_DATA_WEBSITE_ID } from "$env/static/public";
 
-  let { data } = $props();
-  
-  let filteredRoms = data.roms;
-  let totalCount = data.count;
+  let { data } = $props();  
+  let filteredRoms = $state(data.roms);
+  let totalCount = $state(data.count);
   let error = data.error || false;
-  let currentPage = data.page;
+  let currentPage = $state(data.page);
   const pageSize = data.pageSize;
-  let isLoading = false;
+  let isLoading = $state(false);
   let isInitialized = false;
   let initialDataDisplayed = true;
   let isFirstLoad = true;
@@ -33,7 +33,13 @@
   let isNavigating = $state(false);
   let initialLoadComplete = false; // New flag to track initial load
   let hasInteracted = false; // Track if user has interacted with the page
-  let layoutMode = $state('grid'); // 'grid' for default grid layout, 'list' for rectangular
+  let layoutMode = $state(browser && localStorage.getItem('layoutMode') ? localStorage.getItem('layoutMode') : 'grid');
+  
+  $effect(() => {
+    if (browser && layoutMode) {
+      localStorage.setItem('layoutMode', layoutMode);
+    }
+  });
   
   let totalPages = $derived(Math.ceil(totalCount / pageSize));
   
@@ -51,6 +57,13 @@
       isFirstLoad = false;
       initialLoadComplete = true; // Mark initial load as complete
     }, 100);
+
+    // Load the Umami analytics script
+    const script = document.createElement('script');
+		script.defer = true;
+		script.src = '/script.js';
+		script.setAttribute('data-website-id', PUBLIC_DATA_WEBSITE_ID);
+		document.head.appendChild(script);
     
     // Add event listeners to track user interaction
     if (browser) {
@@ -310,70 +323,7 @@
       {#if layoutMode === 'grid'}
         <RomGrid roms={filteredRoms} {isLoading} />
       {:else}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {#each filteredRoms as rom}
-            <Card class="overflow-hidden group hover:border-primary transition-colors">
-              <div 
-                class="relative h-40 bg-muted cursor-pointer" 
-                on:click={() => handleRomClick(rom.slug)}
-              >
-                {#if rom.image}
-                  <img 
-                    src={getOptimizedImageUrl(rom.image, 640)} 
-                    alt={rom.name} 
-                    class="h-full w-full object-cover transition-transform group-hover:scale-105"
-                  />
-                {:else}
-                  <div class="flex h-full items-center justify-center bg-gradient-to-br from-primary/5 to-primary/20">
-                    <Gamepad2 class="h-12 w-12 text-primary/40" />
-                  </div>
-                {/if}
-                
-                {#if rom.console}
-                  <div class="absolute top-3 right-3">
-                    <Badge variant="secondary" class="font-medium">
-                      {rom.console}
-                    </Badge>
-                  </div>
-                {/if}
-              </div>
-              
-              <CardContent class="p-6">
-                <h3 
-                  class="text-lg font-semibold mb-2 cursor-pointer hover:text-primary transition-colors"
-                  on:click={() => handleRomClick(rom.slug)}
-                >
-                  {rom.name}
-                </h3>
-                
-                <div class="flex flex-wrap gap-2 mb-4">
-                  {#if rom.base_game && rom.base_game.length > 0}
-                    <Badge variant="outline">{rom.base_game[0]}</Badge>
-                  {/if}
-                  
-                  {#if rom.status && rom.status.length > 0}
-                    <Badge variant="outline" class="bg-primary/5">
-                      {rom.status[0]}
-                    </Badge>
-                  {/if}
-                </div>
-                
-                <div class="flex items-center justify-between">
-                  <div class="text-sm text-muted-foreground">
-                    by {rom.author}
-                  </div>
-                  
-                  <CollectionButton 
-                    romId={rom.id} 
-                    isInCollection={rom.isInCollection || false} 
-                    variant="outline" 
-                    size="sm"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          {/each}
-        </div>
+        <RomListView roms={filteredRoms.map(rom => ({ ...rom, slug: rom.slug }))} {isLoading} />
       {/if}
       
       {#if totalPages > 1}

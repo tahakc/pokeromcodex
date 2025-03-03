@@ -10,6 +10,10 @@
   import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs'
   import { ArrowLeft, Gamepad2, Search, Star, BookOpen, Clock, Filter, LayoutGrid, LayoutList } from 'lucide-svelte'
   import CollectionButton from '$lib/components/collection/collection-button.svelte'
+  import { browser } from '$app/environment'
+  import { onMount } from 'svelte'
+  import RomGrid from '$lib/components/rom-grid.svelte'
+  import RomListView from '$lib/components/rom-list-view.svelte'
   
   let { data } = $props();
   
@@ -22,7 +26,13 @@
   
   let searchQuery = $state('')
   let activeFilter = $state('all')
-  let layoutMode = $state('grid') // 'grid' for square layout, 'list' for rectangular
+  let layoutMode = $state(browser && localStorage.getItem('layoutMode') ? localStorage.getItem('layoutMode') : 'grid')
+  
+  $effect(() => {
+    if (browser && layoutMode) {
+      localStorage.setItem('layoutMode', layoutMode);
+    }
+  });
   
   let filteredCollection = $derived(collection.filter(item => {
     const matchesSearch = searchQuery === '' || 
@@ -216,125 +226,9 @@
         
         {#if filteredCollection.length > 0}
           {#if layoutMode === 'grid'}
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {#each filteredCollection as item}
-                <Card class="overflow-hidden group hover:border-primary transition-colors h-full">
-                  <div 
-                    class="relative aspect-square bg-muted cursor-pointer" 
-                    on:click={() => handleRomClick(item.rom.slug)}
-                  >
-                    {#if item.rom.image}
-                      <img 
-                        src={item.rom.image} 
-                        alt={item.rom.name} 
-                        class="h-full w-full object-cover transition-transform group-hover:scale-105"
-                      />
-                    {:else}
-                      <div class="flex h-full items-center justify-center bg-gradient-to-br from-primary/5 to-primary/20">
-                        <Gamepad2 class="h-12 w-12 text-primary/40" />
-                      </div>
-                    {/if}
-                    
-                    {#if item.rom.console}
-                      <div class="absolute top-2 right-2">
-                        <Badge variant="secondary" class="font-medium text-xs">
-                          {item.rom.console}
-                        </Badge>
-                      </div>
-                    {/if}
-                  </div>
-                  
-                  <CardContent class="p-4">
-                    <h3 
-                      class="text-sm font-semibold mb-1 cursor-pointer hover:text-primary transition-colors line-clamp-2"
-                      on:click={() => handleRomClick(item.rom.slug)}
-                    >
-                      {item.rom.name}
-                    </h3>
-                    
-                    <div class="flex flex-wrap gap-1 mb-2">
-                      {#if item.rom.base_game && item.rom.base_game.length > 0}
-                        <Badge variant="outline" class="text-xs">{item.rom.base_game[0]}</Badge>
-                      {/if}
-                    </div>
-                    
-                    <div class="flex items-center justify-between">
-                      <CollectionButton 
-                        romId={item.rom.id} 
-                        isInCollection={true} 
-                        variant="ghost" 
-                        size="sm"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              {/each}
-            </div>
+            <RomGrid roms={filteredCollection.map(item => item.rom)} />
           {:else}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {#each filteredCollection as item}
-                <Card class="overflow-hidden group hover:border-primary transition-colors">
-                  <div 
-                    class="relative h-40 bg-muted cursor-pointer" 
-                    on:click={() => handleRomClick(item.rom.slug)}
-                  >
-                    {#if item.rom.image}
-                      <img 
-                        src={item.rom.image} 
-                        alt={item.rom.name} 
-                        class="h-full w-full object-cover transition-transform group-hover:scale-105"
-                      />
-                    {:else}
-                      <div class="flex h-full items-center justify-center bg-gradient-to-br from-primary/5 to-primary/20">
-                        <Gamepad2 class="h-12 w-12 text-primary/40" />
-                      </div>
-                    {/if}
-                    
-                    {#if item.rom.console}
-                      <div class="absolute top-3 right-3">
-                        <Badge variant="secondary" class="font-medium">
-                          {item.rom.console}
-                        </Badge>
-                      </div>
-                    {/if}
-                  </div>
-                  
-                  <CardContent class="p-6">
-                    <h3 
-                      class="text-lg font-semibold mb-2 cursor-pointer hover:text-primary transition-colors"
-                      on:click={() => handleRomClick(item.rom.slug)}
-                    >
-                      {item.rom.name}
-                    </h3>
-                    
-                    <div class="flex flex-wrap gap-2 mb-4">
-                      {#if item.rom.base_game && item.rom.base_game.length > 0}
-                        <Badge variant="outline">{item.rom.base_game[0]}</Badge>
-                      {/if}
-                      
-                      {#if item.rom.status && item.rom.status.length > 0}
-                        <Badge variant="outline" class="bg-primary/5">
-                          {item.rom.status[0]}
-                        </Badge>
-                      {/if}
-                    </div>
-                    
-                    <div class="flex items-center justify-between">
-                      <div class="text-sm text-muted-foreground">
-                        Added: {new Date(item.added_at).toLocaleDateString()}
-                      </div>
-                      
-                      <CollectionButton 
-                        romId={item.rom.id} 
-                        isInCollection={true} 
-                        variant="ghost" 
-                        size="sm"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              {/each}
-            </div>
+            <RomListView roms={filteredCollection} />
           {/if}
         {:else}
           <div class="flex flex-col items-center justify-center py-16 text-center">

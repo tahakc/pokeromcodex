@@ -40,10 +40,10 @@
 						<AccordionTrigger>What are Pokémon ROM hacks?</AccordionTrigger>
 						<AccordionContent>
 							<p class="text-muted-foreground">
-								Pokémon ROM hacks are modified versions of official Pokémon games created by fans.
-								These modifications can range from simple changes like updated graphics or altered
-								Pokémon availability to complete overhauls with new stories, regions, and gameplay
-								mechanics.
+								Pokémon ROM hacks are fan-made modifications of official Pokémon games. 
+								These creative projects can range from minor tweaks, like improved graphics 
+								or adjusted Pokémon availability, to ambitious overhauls that introduce brand-new stories, 
+								regions, and gameplay mechanics, offering a fresh and unique experience for players.
 							</p>
 						</AccordionContent>
 					</AccordionItem>
@@ -52,10 +52,29 @@
 						<AccordionTrigger>Are ROM hacks legal?</AccordionTrigger>
 						<AccordionContent>
 							<p class="text-muted-foreground">
-								ROM hacks exist in a legal gray area. Creating and distributing modified ROMs may
-								infringe on copyright laws. PokeRomCodex does not host or distribute any ROM files -
-								we only provide information about ROM hacks. Players should own legitimate copies of
-								the original games before playing ROM hacks.
+								Yes! Making and distributing ROM Hacks doesn't violate any copyright laws, 
+								as long as you aren't distributing copyrighted content or making money off of 
+								copyrighted content. Because distributing copyrighted content is still illegal, 
+								creators bundle their changes into 'patches' which players can apply to their 
+								own dumped backups of legitimate, official games. This is why PokeROM Codex 
+								only distributes these patches; it is up to the players to provide their 
+								own legally dumped copies of the games.
+							</p>
+						</AccordionContent>
+					</AccordionItem>
+
+					<AccordionItem value="no-download-prepatched-roms">
+						<AccordionTrigger>Why shouldn't I download a pre-patched ROM?</AccordionTrigger>
+						<AccordionContent>
+							<p class="text-muted-foreground">
+								Downloading prepatched ROMs disrespects creators, as these files are often 
+								hosted without permission and can misrepresent their work while generating ad 
+								revenue for unrelated parties. They also come with risks, such as outdated versions, 
+								missing features, improper patching, or even security vulnerabilities. Moreover, 
+								distributing prepatched ROMs violates copyright laws, jeopardizing the legal gray 
+								area that allows ROMhacks to exist. By patching the game yourself, you ensure 
+								accuracy, support creators, and help protect the broader community from potential 
+								legal scrutiny.
 							</p>
 						</AccordionContent>
 					</AccordionItem>
@@ -88,7 +107,7 @@
 				</div>
 
 				<Accordion class="w-full">
-					<AccordionItem value="what-is-pokeromdex">
+					<AccordionItem value="what-is-pokeromcodex">
 						<AccordionTrigger>What is PokeRomCodex?</AccordionTrigger>
 						<AccordionContent>
 							<p class="text-muted-foreground">

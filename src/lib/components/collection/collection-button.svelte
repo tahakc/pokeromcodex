@@ -8,6 +8,7 @@
   export let isInCollection: boolean;
   export let variant: 'default' | 'outline' | 'secondary' | 'ghost' | 'link' | 'destructive' = 'default';
   export let size: 'default' | 'sm' | 'lg' | 'icon' = 'default';
+  export let buttonClass: string = '';
   
   let isLoading = false;
   
@@ -70,15 +71,16 @@
   disabled={isLoading}
   aria-label={isInCollection ? "Remove from collection" : "Add to collection"}
   title={isInCollection ? "Remove from collection" : "Add to collection"}
+  class={`${size === 'icon' ? "h-8 w-8 p-0" : ""} ${buttonClass}`}
 >
   {#if isLoading}
-    <Loader2 class="h-4 w-4 mr-2 animate-spin" />
-    <span>Loading...</span>
+    <Loader2 class={size === 'icon' ? "h-4 w-4 animate-spin" : "h-4 w-4 mr-2 animate-spin"} />
+    {#if size !== 'icon'}<span>Loading...</span>{/if}
   {:else if isInCollection}
-    <BookmarkCheck class="h-4 w-4 mr-2" />
-    <span>In Collection</span>
+    <BookmarkCheck class={size === 'icon' ? "h-4 w-4" : "h-4 w-4 mr-2"} />
+    {#if size !== 'icon'}<span>In Collection</span>{/if}
   {:else}
-    <Bookmark class="h-4 w-4 mr-2" />
-    <span>Add to Collection</span>
+    <Bookmark class={size === 'icon' ? "h-4 w-4" : "h-4 w-4 mr-2"} />
+    {#if size !== 'icon'}<span>Add to Collection</span>{/if}
   {/if}
-</Button> 
+</Button>

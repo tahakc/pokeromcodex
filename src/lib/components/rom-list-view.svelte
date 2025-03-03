@@ -1,17 +1,17 @@
 <script lang="ts">
   import type { Rom } from "$lib/types";
-  import RomCard from "./rom-card.svelte";
+  import RomListItem from "./rom-list-item.svelte";
   import { fade, fly } from "svelte/transition";
   import { flip } from "svelte/animate";
   import { onMount, tick } from "svelte";
   import { browser } from "$app/environment";
 
-  export let roms: (Rom & { slug: string; isInCollection?: boolean })[];
+  // Accept either Rom objects or collection items with rom property
+  export let roms: (Rom & { slug: string; isInCollection?: boolean } | { rom: Rom & { slug: string }; added_at?: string })[];
   export let isLoading = false;
   
   let initialLoad = true;
   let hasInteracted = false;
-  let visibleRoms: (Rom & { slug: string })[] = [];
   let observer: IntersectionObserver | null = null;
   
   const setupIntersectionObserver = () => {
@@ -60,9 +60,9 @@
     };
   });
   
-  $: if (browser && observer && displayRoms) {
+  $: if (browser && observer && processedRoms) {
     tick().then(() => {
-      document.querySelectorAll('.rom-card-container:not(.is-visible)').forEach((el) => {
+      document.querySelectorAll('.rom-list-item-container:not(.is-visible)').forEach((el) => {
         observer?.observe(el);
       });
     });
@@ -75,13 +75,24 @@
     ? Array.from({ length: 8 }, (_, i) => ({ 
         id: -i,
         name: `Loading...`,
-        slug: `skeleton-${i}`, 
+        slug: `skeleton-${i}`,
         isLoading: true 
       })) as (Rom & { slug: string; isLoading: boolean })[]
     : [];
   
-  // During initial load or before interaction, always show the actual data
-  $: displayRoms = showSkeletons ? skeletonRoms : roms;
+  // Process the roms to ensure they have the right format for RomListItem
+  $: processedRoms = (showSkeletons ? skeletonRoms : roms).map(item => {
+    if ('rom' in item && item.rom) {
+      // This is a collection item
+      return {
+        ...item.rom,
+        isInCollection: true
+      };
+    } else {
+      // This is a regular rom or skeleton
+      return item as Rom & { slug: string; isLoading?: boolean; isInCollection?: boolean };
+    }
+  });
 </script>
 
 <style>
@@ -90,14 +101,14 @@
     contain-intrinsic-size: auto 300px;
   }
   
-  .rom-card-container {
+  .rom-list-item-container {
     opacity: 0;
     transform: translateY(10px);
     transition: opacity 0.3s ease, transform 0.3s ease;
   }
   
-  .rom-card-container.is-visible,
-  .rom-card-container.priority-item {
+  .rom-list-item-container.is-visible,
+  .rom-list-item-container.priority-item {
     opacity: 1;
     transform: translateY(0);
   }
@@ -108,15 +119,15 @@
     <p class="text-lg text-muted-foreground">No ROM hacks found</p>
   </div>
 {:else}
-  <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-    {#each displayRoms as rom, index (rom.slug || `item-${index}`)}
+  <div class="flex flex-col space-y-4">
+    {#each processedRoms as rom, index (rom.slug || `item-${index}`)}
       <div 
-        class={`rom-card-container h-full ${index < 4 ? 'priority-item is-visible' : ''}`}
+        class={`rom-list-item-container ${index < 4 ? 'priority-item is-visible' : ''}`}
         data-index={index}
         animate:flip={{ duration: 300 }}
       >
-        <RomCard {rom} displayRoms={displayRoms} />
+        <RomListItem {rom} displayRoms={processedRoms} />
       </div>
     {/each}
   </div>
-{/if} 
+{/if}
