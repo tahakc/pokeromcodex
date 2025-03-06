@@ -86,12 +86,14 @@
       
       <ThemeToggle />
       
-      {#if $page.data.session}
-        <UserDropdown user={$page.data.user} />
+      {#if $page?.data?.session}
+        <UserDropdown />
       {:else}
-        <Button variant="outline" size="sm" href="/auth">
-          Sign In
-        </Button>
+        <a href="/auth">
+          <Button variant="outline" size="sm">
+            Sign In
+          </Button>
+        </a>
       {/if}
       
       <div class="flex md:hidden">

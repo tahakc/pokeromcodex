@@ -12,10 +12,16 @@ export const actions: Actions = {
       }
     }
 
+    // Make sure the redirect URL doesn't create a double slash issue
+    const redirectPath = '/auth/callback';
+    const redirectUrl = PUBLIC_SITE_URL.endsWith('/') 
+      ? `${PUBLIC_SITE_URL.slice(0, -1)}${redirectPath}`
+      : `${PUBLIC_SITE_URL}${redirectPath}`;
+      
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: provider as 'github' | 'discord',
       options: {
-        redirectTo: `${PUBLIC_SITE_URL}/auth/callback`
+        redirectTo: redirectUrl
       }
     })
 

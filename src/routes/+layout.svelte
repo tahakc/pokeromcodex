@@ -5,19 +5,60 @@
 	import { invalidate } from '$app/navigation'
 	import { onMount } from 'svelte'
 	import { Toaster } from "$lib/components/ui/sonner";
+	import { goto } from '$app/navigation';
+	import { toast } from "$lib/components/ui/sonner";
 
 	let { data, children } = $props()
 	let { session, supabase } = $derived(data)
 
 	onMount(() => {
-		const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
-		if (newSession?.expires_at !== session?.expires_at) {
-			invalidate('supabase:auth')
+		// Set up auth state change listener
+		const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
+			console.log('Auth state changed:', event);
+			
+			// Force immediate invalidation of auth state
+			await invalidate('supabase:auth');
+			await invalidate('app:auth');
+			await invalidate('/');
+			
+			// Handle sign in event
+			if (event === 'SIGNED_IN') {
+				// Only show toast if not coming from callback page
+				if (!window.location.pathname.includes('/auth/callback')) {
+					toast.success('Successfully signed in!');
+					goto('/dashboard');
+				}
+			}
+		});
+		
+		// Check for auth state flags and handle them
+		if (typeof localStorage !== 'undefined') {
+			// Handle fresh login flag
+			const freshLogin = localStorage.getItem('freshLogin');
+			if (freshLogin === 'true') {
+				console.log('Fresh login detected, updating UI');
+				localStorage.removeItem('freshLogin');
+				
+				// Force invalidation to update UI
+				invalidate('supabase:auth');
+				invalidate('app:auth');
+			}
+			
+			// Handle sign out flag
+			const signedOut = localStorage.getItem('signedOut');
+			if (signedOut === 'true') {
+				console.log('Sign out detected, updating UI');
+				localStorage.removeItem('signedOut');
+				
+				// Force invalidation to update UI after sign out
+				invalidate('supabase:auth');
+				invalidate('app:auth');
+				invalidate('/');
+			}
 		}
-		})
-
-		return () => data.subscription.unsubscribe()
-  	})
+		
+		return () => data.subscription.unsubscribe();
+	})
 </script>
 
 <svelte:head>

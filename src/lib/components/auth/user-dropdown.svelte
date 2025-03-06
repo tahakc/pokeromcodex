@@ -4,6 +4,7 @@
   import { Button } from '$lib/components/ui/button'
   import { goto } from '$app/navigation'
   import { enhance } from '$app/forms'
+  import { invalidate } from '$app/navigation'
   
   // Import Shadcn dropdown menu components
   import { 
@@ -15,10 +16,22 @@
     DropdownMenuTrigger
   } from '$lib/components/ui/dropdown-menu'
   
-  export let user = $page.data.user
+  // Use reactive declaration for user data
+  $: user = $page.data.user
+  $: name = user?.user_metadata?.full_name || 'Guest'
+  $: avatarUrl = user?.user_metadata?.avatar_url
   
-  const name = user?.user_metadata?.full_name || user?.user_metadata?.name || 'User'
-  const avatarUrl = user?.user_metadata?.avatar_url
+  // Import browser environment check
+  import { browser } from '$app/environment'
+  import { onMount } from 'svelte'
+  
+  // Use onMount instead of reactive statement to avoid infinite loops
+  onMount(() => {
+    // Only run in browser context
+    if (browser && user) {
+      console.log('User dropdown mounted with user:', user.email)
+    }
+  })
 
   let open = false
   
@@ -45,7 +58,7 @@
   }
   
   function handleDashboardClick() {
-    goto('/private')
+    goto('/dashboard')
   }
 </script>
 
@@ -68,18 +81,36 @@
       </div>
     </DropdownMenuLabel>
     <DropdownMenuSeparator />
-    <DropdownMenuItem on:click={handleDashboardClick}>Dashboard</DropdownMenuItem>
-    <DropdownMenuItem on:click={handleProfileClick}>Profile</DropdownMenuItem>
+    <DropdownMenuItem class="cursor-pointer" on:click={handleDashboardClick}>Dashboard</DropdownMenuItem>
+    <DropdownMenuItem class="cursor-pointer" on:click={handleProfileClick}>Profile</DropdownMenuItem>
     <DropdownMenuSeparator />
-    <form method="POST" action="/profile?/signout" use:enhance>
-      <DropdownMenuItem class="cursor-pointer text-destructive focus:text-destructive">
+    <a
+      href="/"
+      class="w-full"
+      on:click|preventDefault={() => {
+        // Immediately redirect first, then handle sign out in background
+        console.log('Forcing navigation FIRST');
+        // Set a flag to indicate sign out in progress
+        document.cookie = 'signing_out=true;path=/';
+        // Force navigation BEFORE the async sign out
+        window.location.replace('/');
+        
+        // Sign out happens after navigation is triggered
+        // This ensures UI updates even if sign out is slow
+        setTimeout(() => {
+          // This may not complete but that's ok - we already navigated
+          const supabase = $page.data.supabase;
+          supabase.auth.signOut();
+        }, 0);
+      }}
+    >
+      <div class="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none text-red-500 hover:bg-red-500 hover:text-white transition-all">
         Sign out
-      </DropdownMenuItem>
-    </form>
+      </div>
+    </a>
   </DropdownMenuContent>
 </DropdownMenu> 
 <style>
-  /* Add specific CSS to override any modal padding behaviors */
   :global(body.modal-open) {
     padding-right: 0 !important;
   }

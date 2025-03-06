@@ -14,7 +14,19 @@
   import { onMount } from 'svelte'
   import RomGrid from '$lib/components/rom-grid.svelte'
   import RomListView from '$lib/components/rom-list-view.svelte'
-  import { formatRomAuthors } from '$lib/utils'
+  import { formatRomAuthors, getOptimizedImageUrl } from '$lib/utils'
+  
+  // Helper function to create URL-friendly slugs
+  function slugify(text: string) {
+    return text
+      .toString()
+      .toLowerCase()
+      .replace(/\s+/g, '-')      // Replace spaces with -
+      .replace(/[^\w\-]+/g, '')  // Remove all non-word chars
+      .replace(/\-\-+/g, '-')    // Replace multiple - with single -
+      .replace(/^-+/, '')        // Trim - from start of text
+      .replace(/-+$/, '');       // Trim - from end of text
+  }
   
   let { data } = $props();
   
@@ -67,6 +79,14 @@
   function toggleLayout() {
     layoutMode = layoutMode === 'grid' ? 'list' : 'grid';
   }
+  
+  // Helper function to format dates
+  function formatDate(dateString: string) {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    });
+  }
 </script>
 
 <svelte:head>
@@ -77,7 +97,7 @@
 <div class="container py-8">
   <div class="mb-8">
     <div class="flex items-center gap-2 mb-2">
-      <a href="/private" class="text-muted-foreground hover:text-foreground">
+      <a href="/dashboard" class="text-muted-foreground hover:text-foreground">
         <ArrowLeft class="h-4 w-4" />
       </a>
       <h1 class="text-3xl font-bold tracking-tight">My Collection</h1>

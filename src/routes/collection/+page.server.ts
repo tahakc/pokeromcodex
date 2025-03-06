@@ -6,13 +6,18 @@ export const load: PageServerLoad = async ({ locals }) => {
     throw redirect(303, '/auth');
   }
 
+  // Get all user IDs associated with this account (from linked accounts)
+  const userIds = locals.allUserIds || [locals.user.id];
+  console.log(`Fetching collection for all linked accounts:`, userIds);
+
+  // Fetch collection for all linked accounts
   const { data: collection, error: collectionError } = await locals.supabase
     .from('collections')
     .select(`
       *,
       rom:romslist(*)
     `)
-    .eq('user_id', locals.user.id)
+    .in('user_id', userIds)
     .order('added_at', { ascending: false });
 
   if (collectionError) {
@@ -20,17 +25,19 @@ export const load: PageServerLoad = async ({ locals }) => {
   }
   
   // Create a set of collection ROM IDs for faster lookups
-  const collectionRomIds = new Set(collection ? collection.map(item => item.rom_id) : []);
+  const collectionRomIds = new Set(collection ? collection.map((item: any) => item.rom_id) : []);
   
   // Transform the collection data for easier consumption in the UI
-  const collectionItems = collection ? collection.map(item => ({
+  const collectionItems = collection ? collection.map((item: any) => ({
     ...item.rom,
     isInCollection: true,
     collectionId: item.id,
-    addedAt: item.added_at
+    addedAt: item.added_at,
+    // Add a flag to indicate if this ROM was added by a linked account
+    addedByLinkedAccount: item.user_id !== locals.user?.id
   })) : [];
   
-  console.log(`User has ${collectionRomIds.size} ROMs in collection`);
+  console.log(`User has ${collectionRomIds.size} ROMs in collection across ${userIds.length} linked accounts`);
   
   const { data: recommendations, error: recommendationsError } = await locals.supabase
     .from('romslist')
@@ -44,7 +51,7 @@ export const load: PageServerLoad = async ({ locals }) => {
   }
 
   // Add isInCollection property to recommendations
-  const recommendationsWithCollectionState = recommendations ? recommendations.map(rom => ({
+  const recommendationsWithCollectionState = recommendations ? recommendations.map((rom: any) => ({
     ...rom,
     isInCollection: collectionRomIds.has(rom.id)
   })) : [];

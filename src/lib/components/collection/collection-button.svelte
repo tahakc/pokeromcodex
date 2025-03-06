@@ -2,7 +2,7 @@
   import { page } from '$app/stores';
   import { Button } from '$lib/components/ui/button';
   import { Bookmark, BookmarkCheck, Loader2 } from 'lucide-svelte';
-  import { toast } from 'svelte-sonner';
+  import { toast } from '$lib/components/ui/sonner';
   import { invalidate } from '$app/navigation';
   import { onMount } from 'svelte';
   import { collectionStore } from '$lib/stores/collection';
