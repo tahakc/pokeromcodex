@@ -6,19 +6,24 @@
   import { Avatar, AvatarFallback, AvatarImage } from '$lib/components/ui/avatar'
   import { Separator } from '$lib/components/ui/separator'
   import { goto } from '$app/navigation'
-  
+
   import { LayoutGrid, Activity, Users, Star, Clock, Settings, Gamepad2 } from 'lucide-svelte'
-  
+
   export let data
-  
+
+  const capitalizeFirstLetter = (str: string) => {
+    if (!str) return str;
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
   const user = $page.data.user
-  const name = user?.user_metadata?.full_name || user?.user_metadata?.name || 'User'
+  let name = capitalizeFirstLetter(user?.user_metadata?.full_name || user?.user_metadata?.name || 'User')
   const avatarUrl = user?.user_metadata?.avatar_url
-  
+
   const collection = data.collection
   const collectionCount = data.collectionCount
-  
-  function getInitials(name: string) {
+
+  const getInitials = (name: string) => {
     return name
       .split(' ')
       .map(part => part[0])
@@ -26,25 +31,25 @@
       .toUpperCase()
       .substring(0, 2)
   }
-  
-  function handleProfileClick() {
+
+  const handleProfileClick = () => {
     goto('/profile')
   }
-  
-  function handleRomClick(slug: string) {
+
+  const handleRomClick = (slug: string) => {
     goto(`/roms/${slug}`)
   }
-  
-  function handleViewAllCollection() {
+
+  const handleViewAllCollection = () => {
     goto('/collection')
   }
-  
+
   const stats = [
     { label: 'ROMs Collected', value: collectionCount.toString(), icon: LayoutGrid },
     { label: 'Recent Activity', value: '0', icon: Activity },
     { label: 'Community Rank', value: 'Novice', icon: Users }
   ]
-  
+
   const recentActivity = []
   const recommendations = [
     { title: 'Pokémon Emerald', type: 'GBA', category: 'Official' },
@@ -79,7 +84,7 @@
       </Button>
     </div>
   </div>
-  
+
   <div class="grid gap-4 md:grid-cols-3">
     {#each stats as stat}
       <Card>
@@ -95,7 +100,7 @@
       </Card>
     {/each}
   </div>
-  
+
   <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
     <Card class="md:col-span-2 lg:col-span-1">
       <CardHeader class="pb-3">
@@ -162,7 +167,7 @@
         </div>
       </CardFooter>
     </Card>
-    
+
     <Card>
       <CardHeader class="pb-3">
         <div class="flex items-center justify-between">
@@ -186,7 +191,7 @@
         {/if}
       </CardContent>
     </Card>
-    
+
     <Card>
       <CardHeader class="pb-3">
         <div class="flex items-center justify-between">
@@ -221,7 +226,7 @@
       </CardFooter>
     </Card>
   </div>
-  
+
   <Card>
     <CardHeader>
       <CardTitle>Community Updates</CardTitle>
@@ -238,4 +243,4 @@
       </div>
     </CardContent>
   </Card>
-</div> 
+</div>
