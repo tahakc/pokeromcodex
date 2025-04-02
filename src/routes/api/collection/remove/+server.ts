@@ -15,7 +15,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     
     // Get all user IDs associated with this account (from linked accounts)
     const userIds = locals.allUserIds || [locals.user.id];
-    console.log(`Checking collection for ROM ${romId} across all linked accounts:`, userIds);
     
     // Find the item in any of the linked collections
     const { data: existingItems, error: checkError } = await locals.supabase
@@ -25,13 +24,11 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       .eq('rom_id', romId);
 
     if (checkError) { 
-      console.error('Error checking collection:', checkError);
       return json({ success: false, error: 'Failed to check collection status' }, { status: 400 });
     }
 
     // If item doesn't exist in any linked account, return success without attempting to remove
     if (!existingItems || existingItems.length === 0) {
-      console.log(`ROM ${romId} not in collection for any linked user of ${locals.user.id}, nothing to remove`);
       return json({ 
         success: true, 
         alreadyRemoved: true,
@@ -48,11 +45,9 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         .eq('id', item.id);
       
       if (error) {
-        console.error(`Error removing ROM from collection for user ${item.user_id}:`, error);
         return { success: false, userId: item.user_id, error };
       }
       
-      console.log(`ROM ${romId} removed from collection for user ${item.user_id}`);
       return { success: true, userId: item.user_id };
     }));
     
@@ -73,7 +68,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       }, { status: 400 });
     }
   } catch (error) {
-    console.error('Error removing ROM from collection:', error);
     return json({ success: false, error: 'An unexpected error occurred' }, { status: 500 });
   }
 };

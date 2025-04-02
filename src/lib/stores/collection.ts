@@ -10,7 +10,6 @@ const createCollectionStore = () => {
     subscribe,
     initialize: (collectionIds: number[]) => {
       set(new Set(collectionIds));
-      console.log('Collection store initialized with', collectionIds.length, 'items');
     },
     add: async (romId: number) => {
       update(collection => {

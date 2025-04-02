@@ -14,8 +14,6 @@
 	onMount(() => {
 		// Set up auth state change listener
 		const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
-			console.log('Auth state changed:', event);
-			
 			// Force immediate invalidation of auth state
 			await invalidate('supabase:auth');
 			await invalidate('app:auth');
@@ -36,7 +34,6 @@
 			// Handle fresh login flag
 			const freshLogin = localStorage.getItem('freshLogin');
 			if (freshLogin === 'true') {
-				console.log('Fresh login detected, updating UI');
 				localStorage.removeItem('freshLogin');
 				
 				// Force invalidation to update UI
@@ -47,7 +44,6 @@
 			// Handle sign out flag
 			const signedOut = localStorage.getItem('signedOut');
 			if (signedOut === 'true') {
-				console.log('Sign out detected, updating UI');
 				localStorage.removeItem('signedOut');
 				
 				// Force invalidation to update UI after sign out

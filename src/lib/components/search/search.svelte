@@ -43,25 +43,25 @@
   function initializeFilters() {
     if (browser) {
       const url = new URL(window.location.href);
-      
+
       const urlSearchQuery = url.searchParams.get('q');
       if (urlSearchQuery) {
         searchQuery = urlSearchQuery;
         lastSearchQuery = urlSearchQuery;
       }
-      
+
       // Initialize page from URL
       const urlPage = url.searchParams.get('page');
       if (urlPage) {
         currentPage = parseInt(urlPage, 10);
         prevPage = currentPage;
       }
-      
+
       const baseGame = url.searchParams.get('baseGame')?.split(',').filter(Boolean) || [];
       const status = url.searchParams.get('status')?.split(',').filter(Boolean) || [];
       const difficulty = url.searchParams.get('difficulty')?.split(',').filter(Boolean) || [];
       const features = url.searchParams.get('features')?.split(',').filter(Boolean) || [];
-      
+
       selectedFilters = {
         baseGame,
         status,
@@ -77,7 +77,7 @@
         const hasFilters = Object.values(selectedFilters).some(arr => arr.length > 0);
         const hasQuery = !!searchQuery;
         const isNotFirstPage = currentPage !== 1;
-        
+
         if (!skipInitialSearch && (hasFilters || hasQuery || isNotFirstPage)) {
           performSearch();
         }
@@ -92,7 +92,7 @@
     const trackInteraction = () => {
       hasInteracted = true;
     };
-    
+
     window.addEventListener('click', trackInteraction);
     window.addEventListener('keydown', trackInteraction);
     window.addEventListener('scroll', trackInteraction);
@@ -112,9 +112,7 @@
           currentPage,
           pageSize
         );
-        
-        console.log('Search results:', { count, resultsLength: data.length, currentPage });
-        
+
         onSearch(data, count);
       } catch (error) {
         console.error('Error performing search:', error);
@@ -122,13 +120,12 @@
       }
       return;
     }
-    
+
     if (loading) return;
-    
+
     loading = true;
     onLoadingChange(true);
-    console.log('Performing search with:', { searchQuery, selectedFilters, currentPage, pageSize });
-    
+
     try {
       const { data, count } = await searchRoms(
         searchQuery,
@@ -136,9 +133,7 @@
         currentPage,
         pageSize
       );
-      
-      console.log('Search results:', { count, resultsLength: data.length, currentPage });
-      
+
       onSearch(data, count);
     } catch (error) {
       console.error('Error performing search:', error);
@@ -153,25 +148,22 @@
     category: keyof SearchFilters,
     value: string
   ) {
-    console.log('Filter change:', { category, value });
-    
+
     const index = selectedFilters[category].indexOf(value);
     if (index === -1) {
       selectedFilters[category] = [...selectedFilters[category], value];
     } else {
       selectedFilters[category] = selectedFilters[category].filter((v) => v !== value);
     }
-    
-    console.log('Updated filters:', selectedFilters);
-    
+
     const url = new URL(window.location.href);
-    
+
     if (searchQuery) {
       url.searchParams.set('q', searchQuery);
     } else {
       url.searchParams.delete('q');
     }
-    
+
     Object.entries(selectedFilters).forEach(([key, values]) => {
       if (values.length > 0) {
         url.searchParams.set(key, values.join(','));
@@ -179,11 +171,11 @@
         url.searchParams.delete(key);
       }
     });
-    
+
     if (url.searchParams.get('page') !== String(currentPage)) {
       url.searchParams.set('page', String(currentPage));
     }
-    
+
     goto(url, { keepFocus: true }).then(() => performSearch());
   }
 
@@ -193,12 +185,12 @@
     if (searchTimeout) {
       clearTimeout(searchTimeout);
     }
-    
+
     searchTimeout = setTimeout(async () => {
       const url = new URL(window.location.href);
       const currentUrl = new URL(window.location.href);
       let urlChanged = false;
-      
+
       // Store the page before a new search
       if (searchQuery !== lastSearchQuery) {
         if (searchQuery && !lastSearchQuery) {
@@ -213,7 +205,7 @@
         lastSearchQuery = searchQuery;
         urlChanged = true;
       }
-      
+
       if (searchQuery) {
         if (currentUrl.searchParams.get('q') !== searchQuery) {
           url.searchParams.set('q', searchQuery);
@@ -225,7 +217,7 @@
           urlChanged = true;
         }
       }
-      
+
       Object.entries(selectedFilters).forEach(([key, values]) => {
         const currentValues = currentUrl.searchParams.get(key)?.split(',').filter(Boolean) || [];
         if (values.length > 0) {
@@ -238,24 +230,24 @@
           urlChanged = true;
         }
       });
-      
+
       // Update page parameter
       if (currentPage !== 1) {
         url.searchParams.set('page', String(currentPage));
       } else {
         url.searchParams.delete('page');
       }
-      
+
       if (urlChanged) {
         await goto(url, { keepFocus: true });
       }
-      
+
       await performSearch();
     }, 300);
   }
 
   $: if (searchQuery !== undefined && browser && !isInitialLoad) setupSearchDebounce();
-  
+
   // Handle page changes
   $: if (!isInitialLoad && currentPage !== prevPage) {
     const url = new URL(window.location.href);
@@ -276,9 +268,9 @@
 
 <div class="space-y-4">
   <div class="relative">
-    <SearchBar 
-      value={searchQuery} 
-      onChange={(value) => searchQuery = value} 
+    <SearchBar
+      value={searchQuery}
+      onChange={(value) => searchQuery = value}
       showFiltersButton={true}
       onFiltersClick={() => showFilters = !showFilters}
       filtersActive={activeFiltersCount > 0}
@@ -288,7 +280,7 @@
   </div>
 
   {#if showFilters}
-    <div 
+    <div
       transition:slide={{ duration: 200 }}
       class="overflow-hidden rounded-lg border bg-card p-4 shadow-sm"
     >
@@ -305,4 +297,4 @@
       <div class="animate-pulse text-muted-foreground">Loading...</div>
     </div>
   {/if}
-</div> 
+</div>

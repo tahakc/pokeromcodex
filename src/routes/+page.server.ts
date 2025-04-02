@@ -24,7 +24,6 @@ export const load: PageServerLoad = async ({ url, locals }) => {
     if (page === 1 && !hasSearchParams) {
       // Check if we have a valid cache
       if (initialPageCache && (Date.now() - initialPageCacheTime < CACHE_TTL)) {
-        console.log('Using server-side cache for faster initial loading');
         data = initialPageCache.data;
         count = initialPageCache.count;
       } else {
@@ -61,8 +60,6 @@ export const load: PageServerLoad = async ({ url, locals }) => {
           ...rom,
           isInCollection: collectionSet.has(rom.id)
         }));
-        
-        console.log(`[DEBUG] Home page: Marked ${collectionItems.length} ROMs as in collection`);
       }
     }
     
@@ -77,7 +74,6 @@ export const load: PageServerLoad = async ({ url, locals }) => {
       }
     };
   } catch (error) {
-    console.error('Error loading ROMs:', error);
     return {
       roms: [],
       count: 0,

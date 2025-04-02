@@ -47,16 +47,12 @@ export const actions: Actions = {
       })
       
       if (error) {
-        console.error('OAuth URL error:', error)
         return fail(500, { error: error.message })
       }
 
       if (!data || !data.url) {
-        console.error('No URL in OAuth response:', data)
         return fail(500, { error: 'No URL returned from OAuth provider' })
       }
-
-      console.log('Generated OAuth URL:', { url: data.url, provider })
 
       // Return the URL in a format that our client code expects
       return {
@@ -64,7 +60,6 @@ export const actions: Actions = {
         provider
       }
     } catch (error) {
-      console.error('Exception in getOAuthUrl:', error)
       return fail(500, { error: 'An unexpected error occurred' })
     }
   },
@@ -118,7 +113,6 @@ export const actions: Actions = {
 
       return { success: true }
     } catch (error) {
-      console.error('Error unlinking identity:', error)
       return fail(500, { error: 'Failed to unlink identity' })
     }
   }

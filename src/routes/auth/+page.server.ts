@@ -7,10 +7,7 @@ export const actions: Actions = {
     const formData = await request.formData()
     const provider = formData.get('provider')?.toString() || ''
 
-    console.log('Login attempt with provider:', provider)
-
     if (!['github', 'discord'].includes(provider)) {
-      console.error('Invalid provider:', provider)
       return {
         error: 'Invalid provider'
       }
@@ -21,12 +18,6 @@ export const actions: Actions = {
     const redirectUrl = PUBLIC_SITE_URL.endsWith('/') 
       ? `${PUBLIC_SITE_URL.slice(0, -1)}${redirectPath}`
       : `${PUBLIC_SITE_URL}${redirectPath}`;
-      
-    console.log('Attempting OAuth sign in with:', {
-      provider,
-      redirectUrl,
-      scopes: provider === 'discord' ? 'identify email' : 'user:email'
-    });
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: provider as 'github' | 'discord',
@@ -39,24 +30,18 @@ export const actions: Actions = {
       }
     })
 
-    console.log('OAuth response:', { data, error })
-
     if (error) {
-      console.error('OAuth error:', error)
       return {
         error: error.message
       }
     }
 
     if (!data.url) {
-      console.error('No OAuth URL returned')
       return {
         error: 'No OAuth URL returned'
       }
     }
 
-    console.log('Redirecting to:', data.url)
-    // Instead of throwing redirect, return a redirect response
     return {
       status: 303,
       redirect: data.url

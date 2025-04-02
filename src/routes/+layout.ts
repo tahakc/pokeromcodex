@@ -29,20 +29,20 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
         const collectionIds = collectionData.map(item => item.rom_id);
         // Initialize the collection store
         collectionStore.initialize(collectionIds);
-        console.log(`[DEBUG] Initialized collection store with ${collectionIds.length} ROMs`);
       }
     } catch (err) {
       console.error('Error fetching collection data:', err);
     }
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
+  const user = session?.user || null
+  
+  // We need to return identities here to satisfy the PageData interface
+  // This will be properly populated in the +page.ts files that need it
   return {
+    ...data,      // This already contains session and cookies
     supabase,
     user,
-    ...data,
+    identities: [] // Add empty identities array to satisfy the type requirement
   }
 }

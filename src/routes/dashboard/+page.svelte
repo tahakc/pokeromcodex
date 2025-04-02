@@ -114,7 +114,12 @@
         {#if collection && collection.length > 0}
           <div class="grid grid-cols-1 gap-3">
             {#each collection.slice(0, 3) as item}
-              <div class="flex items-center gap-3 group cursor-pointer" on:click={() => handleRomClick(item.rom.slug)}>
+              <button 
+                type="button"
+                class="flex items-center gap-3 group cursor-pointer text-left w-full hover:bg-muted/50 p-1 rounded-md transition-colors"
+                on:click={() => handleRomClick(item.rom.slug)}
+                aria-label="View details for {item.rom.name}"
+              >
                 <div class="relative h-12 w-12 overflow-hidden rounded bg-muted">
                   {#if item.rom.image}
                     <img src={item.rom.image} alt={item.rom.name} class="h-full w-full object-cover" />
@@ -135,7 +140,7 @@
                     {/if}
                   </div>
                 </div>
-              </div>
+              </button>
               {#if collection.indexOf(item) < Math.min(2, collection.length - 1)}
                 <Separator />
               {/if}

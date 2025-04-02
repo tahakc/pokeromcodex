@@ -9,18 +9,20 @@ export const load: PageServerLoad = async ({ url, locals: { supabase } }) => {
   }
 
   try {
+    // Exchange the auth code for a session
+    // We're using a try-catch here to handle any errors that might occur during the code exchange
     const { error: signInError } = await supabase.auth.exchangeCodeForSession(code);
     if (signInError) throw signInError;
 
+    // Get the user details
     const { data: { user } } = await supabase.auth.getUser();
-    const { data: identityData } = await supabase.auth.getUserIdentities();
-
-    return {
-      user,
-      identities: identityData?.identities || [],
-      _closePopup: true // Special flag to indicate popup should be closed
-    };
-  } catch (error) {
+    
+    // If this point is reached, authentication was successful - redirect to dashboard
+    throw redirect(303, '/dashboard');
+  } catch (error: any) { // Type the error as any to allow property access
+    // Only handle errors that aren't redirects
+    if (error && error.status === 303) throw error;
+    
     console.error('Auth error:', error);
     throw redirect(303, '/auth?error=auth_error');
   }

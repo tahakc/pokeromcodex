@@ -84,14 +84,12 @@
       }
 
       const result = await response.json();
-      console.log('OAuth URL result:', result); // Debug log
 
       // Parse the response data - it's coming as a complex JSON structure
       if (result.data) {
         try {
           // The data is a string that needs to be parsed
           const parsedData = JSON.parse(result.data);
-          console.log('Parsed OAuth data:', parsedData);
           
           // Extract the URL from the parsed data
           // Based on the console output, it appears to be the second element in the array
@@ -99,18 +97,15 @@
           
           if (oauthUrl && typeof oauthUrl === 'string') {
             // Redirect to the OAuth URL directly
-            console.log('Redirecting to:', oauthUrl);
             window.location.href = oauthUrl;
             return;
           }
         } catch (parseError) {
-          console.error('Error parsing OAuth data:', parseError);
         }
       }
       
       // Direct URL access as fallback
       if (result.url && typeof result.url === 'string') {
-        console.log('Using direct URL from result:', result.url);
         window.location.href = result.url;
         return;
       }
@@ -119,7 +114,6 @@
       toast.error('Error', { description: 'Invalid OAuth URL received' });
       isLinking = false;
     } catch (error) {
-      console.error('Error in linkAccount:', error);
       toast.error('Error', { description: 'Failed to start account linking' });
       isLinking = false;
     }

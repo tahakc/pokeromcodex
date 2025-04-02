@@ -15,7 +15,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
     // Get all user IDs associated with this account (from linked accounts)
     const userIds = locals.allUserIds || [locals.user.id];
-    console.log(`Checking collection for ROM ${romId} across all linked accounts:`, userIds);
 
     // First check if the item is already in the collection for any linked account
     const { data: existingItems, error: checkError } = await locals.supabase
@@ -25,14 +24,12 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       .eq('rom_id', romId);
 
     if (checkError) {
-      console.error('Error checking collection:', checkError);
       return json({ success: false, error: 'Failed to check collection status' }, { status: 400 });
     }
 
     // If item already exists in any linked account, return success without attempting to add again
     if (existingItems && existingItems.length > 0) {
       const existingUserId = existingItems[0].user_id;
-      console.log(`ROM ${romId} already in collection for user ${existingUserId} (linked to ${locals.user.id})`);
       return json({ 
         success: true, 
         alreadyExists: true,
@@ -50,17 +47,14 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       });
 
     if (error) {
-      console.error('Error adding ROM to collection:', error);
       return json({ success: false, error: 'Failed to add ROM to collection' }, { status: 400 });
     }
 
-    console.log(`ROM ${romId} added to collection for user ${locals.user.id}`);
     return json({ 
       success: true,
       message: 'ROM added to collection'
     });
   } catch (error) {
-    console.error('Error adding ROM to collection:', error);
     return json({ success: false, error: 'An unexpected error occurred' }, { status: 500 });
   }
 };

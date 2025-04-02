@@ -8,7 +8,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 
   // Get all user IDs associated with this account (from linked accounts)
   const userIds = locals.allUserIds || [locals.user.id];
-  console.log(`Fetching collection for all linked accounts:`, userIds);
 
   // Fetch collection for all linked accounts
   const { data: collection, error: collectionError } = await locals.supabase
@@ -36,8 +35,6 @@ export const load: PageServerLoad = async ({ locals }) => {
     // Add a flag to indicate if this ROM was added by a linked account
     addedByLinkedAccount: item.user_id !== locals.user?.id
   })) : [];
-  
-  console.log(`User has ${collectionRomIds.size} ROMs in collection across ${userIds.length} linked accounts`);
   
   const { data: recommendations, error: recommendationsError } = await locals.supabase
     .from('romslist')

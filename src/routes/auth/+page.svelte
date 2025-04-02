@@ -16,7 +16,6 @@
   function handleSubmit() {
     isLoading = true
     return async ({ result }: { result: { type: string, data?: { redirect?: string } } }) => {
-      console.log('Form submission result:', result)
       if (result.type === 'success' && result.data?.redirect) {
         window.location.href = result.data.redirect
         return

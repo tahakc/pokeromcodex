@@ -5,9 +5,9 @@
   import { goto } from '$app/navigation'
   import { enhance } from '$app/forms'
   import { invalidate } from '$app/navigation'
-  
+
   // Import Shadcn dropdown menu components
-  import { 
+  import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
@@ -15,26 +15,14 @@
     DropdownMenuSeparator,
     DropdownMenuTrigger
   } from '$lib/components/ui/dropdown-menu'
-  
+
   // Use reactive declaration for user data
   $: user = $page.data.user
   $: name = user?.user_metadata?.full_name || 'Guest'
   $: avatarUrl = user?.user_metadata?.avatar_url
-  
-  // Import browser environment check
-  import { browser } from '$app/environment'
-  import { onMount } from 'svelte'
-  
-  // Use onMount instead of reactive statement to avoid infinite loops
-  onMount(() => {
-    // Only run in browser context
-    if (browser && user) {
-      console.log('User dropdown mounted with user:', user.email)
-    }
-  })
 
   let open = false
-  
+
   // Immediately reset padding when dropdown opens
   $: if (open && typeof document !== 'undefined') {
     document.body.style.paddingRight = '0px';
@@ -43,7 +31,7 @@
       document.body.style.paddingRight = '0px';
     });
   }
-  
+
   function getInitials(name: string) {
     return name
       .split(' ')
@@ -52,11 +40,11 @@
       .toUpperCase()
       .substring(0, 2)
   }
-  
+
   function handleProfileClick() {
     goto('/profile')
   }
-  
+
   function handleDashboardClick() {
     goto('/dashboard')
   }
@@ -89,12 +77,11 @@
       class="w-full"
       on:click|preventDefault={() => {
         // Immediately redirect first, then handle sign out in background
-        console.log('Forcing navigation FIRST');
         // Set a flag to indicate sign out in progress
         document.cookie = 'signing_out=true;path=/';
         // Force navigation BEFORE the async sign out
         window.location.replace('/');
-        
+
         // Sign out happens after navigation is triggered
         // This ensures UI updates even if sign out is slow
         setTimeout(() => {
@@ -109,7 +96,7 @@
       </div>
     </a>
   </DropdownMenuContent>
-</DropdownMenu> 
+</DropdownMenu>
 <style>
   :global(body.modal-open) {
     padding-right: 0 !important;
