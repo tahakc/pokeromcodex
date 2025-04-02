@@ -15,12 +15,11 @@ export const load: PageServerLoad = async ({ url, locals: { supabase } }) => {
     const { data: { user } } = await supabase.auth.getUser();
     const { data: identityData } = await supabase.auth.getUserIdentities();
 
-    return {
-      user,
-      identities: identityData?.identities || [],
-      _closePopup: true // Special flag to indicate popup should be closed
-    };
-  } catch (error) {
+    // Instead of returning data for the popup, redirect back to the profile page
+    throw redirect(303, '/profile?linked=true');
+  } catch (error: any) { // Type the error as any to allow property access
+    if (error.status === 303) throw error; // Re-throw redirects
+    
     console.error('Auth error:', error);
     throw redirect(303, '/auth?error=auth_error');
   }

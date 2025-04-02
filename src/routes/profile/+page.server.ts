@@ -39,7 +39,11 @@ export const actions: Actions = {
     try {
       // Use the built-in linkIdentity method
       const { data, error } = await supabase.auth.linkIdentity({
-        provider: provider as Provider
+        provider: provider as Provider,
+        options: {
+          // Specify where to redirect after OAuth completes
+          redirectTo: `${PUBLIC_SITE_URL}/auth/linkCallback`
+        }
       })
       
       if (error) {
@@ -54,6 +58,7 @@ export const actions: Actions = {
 
       console.log('Generated OAuth URL:', { url: data.url, provider })
 
+      // Return the URL in a format that our client code expects
       return {
         url: data.url,
         provider

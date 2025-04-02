@@ -1,7 +1,7 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
   import { page } from '$app/stores';
-  import { AlertCircle, GithubIcon, Unlink } from 'lucide-svelte';
+  import { AlertCircle, CheckCircle, GithubIcon, Unlink } from 'lucide-svelte';
   import { toast } from 'svelte-sonner';
   import { Alert, AlertDescription, AlertTitle } from '$lib/components/ui/alert';
   import { Avatar, AvatarFallback, AvatarImage } from '$lib/components/ui/avatar';
@@ -11,21 +11,31 @@
   import { getInitials } from '$lib/utils';
   import type { UserIdentity } from '@supabase/supabase-js';
   import DiscordIcon from '~icons/fa-brands/discord';
+  import { onMount } from 'svelte';
 
   let isLoading = false;
   let isLinking = false;
-  let popupWindow: Window | null = null;
 
   $: user = $page.data.session?.user;
   $: email = user?.email || 'No email';
   $: name = user?.user_metadata?.name || user?.user_metadata?.full_name || 'Anonymous';
   $: avatarUrl = user?.user_metadata?.avatar_url || '';
   
-  // Get identities from page data
+  // Get identities and linked status from page data
   $: identities = ($page.data.identities || []) as UserIdentity[];
   $: isGithubLinked = identities.some(i => i.provider === 'github');
   $: isDiscordLinked = identities.some(i => i.provider === 'discord');
   $: primaryProvider = identities[0]?.provider || 'Unknown';
+  $: linked = $page.data.linked;
+
+  // Show a toast notification when account is linked
+  onMount(() => {
+    if (linked) {
+      toast.success('Account linked successfully', { 
+        description: 'Your account has been successfully linked' 
+      });
+    }
+  });
 
   function getProviderIcon(provider: string) {
     switch (provider.toLowerCase()) {
@@ -49,8 +59,8 @@
     }
   }
 
-  // Function to open OAuth popup for account linking
-  const openOAuthPopup = async (provider: string) => {
+  // Function to handle direct redirect for account linking
+  const linkAccount = async (provider: string) => {
     try {
       isLinking = true;
 
@@ -76,42 +86,40 @@
       const result = await response.json();
       console.log('OAuth URL result:', result); // Debug log
 
-      if (result.url) {
-        // Open the OAuth URL in a popup window
-        const width = 600;
-        const height = 700;
-        const left = window.screenX + (window.outerWidth - width) / 2;
-        const top = window.screenY + (window.outerHeight - height) / 2;
-        
-        popupWindow = window.open(
-          result.url,
-          `Link ${provider} Account`,
-          `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
-        );
-
-        if (!popupWindow) {
-          toast.error('Error', { description: 'Popup blocked. Please allow popups for this site.' });
-          isLinking = false;
-          return;
-        }
-
-        // Poll for changes in the popup window
-        const checkPopup = setInterval(() => {
-          try {
-            // Check if window is closed
-            if (!popupWindow || popupWindow.closed) {
-              clearInterval(checkPopup);
-              isLinking = false;
-              // Refresh the page to show updated identities
-              window.location.reload();
-            }
-          } catch (e) {
-            console.error('Error checking popup:', e);
+      // Parse the response data - it's coming as a complex JSON structure
+      if (result.data) {
+        try {
+          // The data is a string that needs to be parsed
+          const parsedData = JSON.parse(result.data);
+          console.log('Parsed OAuth data:', parsedData);
+          
+          // Extract the URL from the parsed data
+          // Based on the console output, it appears to be the second element in the array
+          const oauthUrl = parsedData[1];
+          
+          if (oauthUrl && typeof oauthUrl === 'string') {
+            // Redirect to the OAuth URL directly
+            console.log('Redirecting to:', oauthUrl);
+            window.location.href = oauthUrl;
+            return;
           }
-        }, 500);
+        } catch (parseError) {
+          console.error('Error parsing OAuth data:', parseError);
+        }
       }
+      
+      // Direct URL access as fallback
+      if (result.url && typeof result.url === 'string') {
+        console.log('Using direct URL from result:', result.url);
+        window.location.href = result.url;
+        return;
+      }
+      
+      // If we get here, something went wrong with parsing
+      toast.error('Error', { description: 'Invalid OAuth URL received' });
+      isLinking = false;
     } catch (error) {
-      console.error('Error in openOAuthPopup:', error);
+      console.error('Error in linkAccount:', error);
       toast.error('Error', { description: 'Failed to start account linking' });
       isLinking = false;
     }
@@ -133,6 +141,16 @@
         <AlertTitle>Error</AlertTitle>
         <AlertDescription>
           {$page.form.error}
+        </AlertDescription>
+      </Alert>
+    {/if}
+
+    {#if linked}
+      <Alert class="mb-6 border-green-500 bg-green-50 text-green-800 dark:border-green-700 dark:bg-green-950 dark:text-green-300">
+        <CheckCircle class="h-4 w-4 text-green-600 dark:text-green-400" />
+        <AlertTitle>Success</AlertTitle>
+        <AlertDescription>
+          Your account has been successfully linked
         </AlertDescription>
       </Alert>
     {/if}
@@ -201,7 +219,7 @@
                   <Button
                     variant="outline"
                     size="sm"
-                    on:click={() => openOAuthPopup('github')}
+                    on:click={() => linkAccount('github')}
                     disabled={isLinking}
                   >
                     {#if isLinking}
@@ -240,7 +258,7 @@
                   <Button
                     variant="outline"
                     size="sm"
-                    on:click={() => openOAuthPopup('discord')}
+                    on:click={() => linkAccount('discord')}
                     disabled={isLinking}
                   >
                     {#if isLinking}
