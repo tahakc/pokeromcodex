@@ -36,7 +36,10 @@
   let searchTimeout: ReturnType<typeof setTimeout> | null = null;
   let isInitialLoad = true;
   let prevPage = currentPage;
+  let lastSearchQuery = searchQuery;
   let hasInteracted = false;
+  let pageBeforeSearch: number | null = null;
+
   function initializeFilters() {
     if (browser) {
       const url = new URL(window.location.href);
@@ -44,6 +47,14 @@
       const urlSearchQuery = url.searchParams.get('q');
       if (urlSearchQuery) {
         searchQuery = urlSearchQuery;
+        lastSearchQuery = urlSearchQuery;
+      }
+      
+      // Initialize page from URL
+      const urlPage = url.searchParams.get('page');
+      if (urlPage) {
+        currentPage = parseInt(urlPage, 10);
+        prevPage = currentPage;
       }
       
       const baseGame = url.searchParams.get('baseGame')?.split(',').filter(Boolean) || [];
@@ -102,7 +113,7 @@
           pageSize
         );
         
-        console.log('Search results:', { count, resultsLength: data.length });
+        console.log('Search results:', { count, resultsLength: data.length, currentPage });
         
         onSearch(data, count);
       } catch (error) {
@@ -126,7 +137,7 @@
         pageSize
       );
       
-      console.log('Search results:', { count, resultsLength: data.length });
+      console.log('Search results:', { count, resultsLength: data.length, currentPage });
       
       onSearch(data, count);
     } catch (error) {
@@ -188,48 +199,73 @@
       const currentUrl = new URL(window.location.href);
       let urlChanged = false;
       
+      // Store the page before a new search
+      if (searchQuery !== lastSearchQuery) {
+        if (searchQuery && !lastSearchQuery) {
+          // Starting a new search
+          pageBeforeSearch = currentPage;
+          currentPage = 1;
+        } else if (!searchQuery && lastSearchQuery) {
+          // Clearing the search
+          currentPage = pageBeforeSearch || 1;
+          pageBeforeSearch = null;
+        }
+        lastSearchQuery = searchQuery;
+        urlChanged = true;
+      }
+      
       if (searchQuery) {
         if (currentUrl.searchParams.get('q') !== searchQuery) {
           url.searchParams.set('q', searchQuery);
           urlChanged = true;
         }
-      } else if (currentUrl.searchParams.has('q')) {
-        url.searchParams.delete('q');
-        urlChanged = true;
+      } else {
+        if (currentUrl.searchParams.has('q')) {
+          url.searchParams.delete('q');
+          urlChanged = true;
+        }
       }
       
       Object.entries(selectedFilters).forEach(([key, values]) => {
-        const currentValue = currentUrl.searchParams.get(key);
-        const newValue = values.length > 0 ? values.join(',') : null;
-        
-        if (currentValue !== newValue) {
-          if (values.length > 0) {
+        const currentValues = currentUrl.searchParams.get(key)?.split(',').filter(Boolean) || [];
+        if (values.length > 0) {
+          if (JSON.stringify(values) !== JSON.stringify(currentValues)) {
             url.searchParams.set(key, values.join(','));
-          } else {
-            url.searchParams.delete(key);
+            urlChanged = true;
           }
+        } else if (currentValues.length > 0) {
+          url.searchParams.delete(key);
           urlChanged = true;
         }
       });
       
-      if (currentUrl.searchParams.get('page') !== '1' && currentPage === 1) {
+      // Update page parameter
+      if (currentPage !== 1) {
+        url.searchParams.set('page', String(currentPage));
+      } else {
         url.searchParams.delete('page');
-        urlChanged = true;
       }
       
       if (urlChanged) {
-        await goto(url, { keepFocus: true, replaceState: true });
+        await goto(url, { keepFocus: true });
       }
       
       await performSearch();
     }, 300);
   }
-  
+
   $: if (searchQuery !== undefined && browser && !isInitialLoad) setupSearchDebounce();
   
+  // Handle page changes
   $: if (!isInitialLoad && currentPage !== prevPage) {
+    const url = new URL(window.location.href);
+    if (currentPage !== 1) {
+      url.searchParams.set('page', String(currentPage));
+    } else {
+      url.searchParams.delete('page');
+    }
     prevPage = currentPage;
-    performSearch();
+    goto(url, { keepFocus: true }).then(() => performSearch());
   }
 
   $: activeFiltersCount = Object.values(selectedFilters).reduce(

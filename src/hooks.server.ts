@@ -15,6 +15,7 @@ const supabase: Handle = async ({ event, resolve }) => {
       },
     },
   })
+
   event.locals.safeGetSession = async () => {
     const {
       data: { session },
@@ -99,4 +100,4 @@ const authGuard: Handle = async ({ event, resolve }) => {
   return resolve(event)
 }
 
-export const handle: Handle = sequence(supabase, authGuard)
+export const handle = sequence(supabase, authGuard)

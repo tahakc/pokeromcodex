@@ -8,6 +8,22 @@
   import { enhance } from '$app/forms'
 
   let isLoading = false
+  let error: string | undefined = $page.form?.error
+
+  // Reset error when form state changes
+  $: error = $page.form?.error
+
+  function handleSubmit() {
+    isLoading = true
+    return async ({ result }: { result: { type: string, data?: { redirect?: string } } }) => {
+      console.log('Form submission result:', result)
+      if (result.type === 'success' && result.data?.redirect) {
+        window.location.href = result.data.redirect
+        return
+      }
+      isLoading = false
+    }
+  }
 </script>
 
 <svelte:head>
@@ -25,13 +41,12 @@
         </CardDescription>
       </CardHeader>
       <CardContent class="grid gap-4">
-        <form method="POST" action="?/login" use:enhance={() => {
-          isLoading = true
-          return async ({ update }) => {
-            isLoading = false
-            await update()
-          }
-        }}>
+        {#if error}
+          <div class="text-sm text-red-500 text-center">
+            {error}
+          </div>
+        {/if}
+        <form method="POST" action="?/login" use:enhance={handleSubmit}>
           <input type="hidden" name="provider" value="github" />
           <Button type="submit" class="w-full" variant="outline" disabled={isLoading}>
             <GithubIcon class="mr-2 h-4 w-4" />
@@ -39,13 +54,7 @@
           </Button>
         </form>
         
-        <form method="POST" action="?/login" use:enhance={() => {
-          isLoading = true
-          return async ({ update }) => {
-            isLoading = false
-            await update()
-          }
-        }}>
+        <form method="POST" action="?/login" use:enhance={handleSubmit}>
           <input type="hidden" name="provider" value="discord" />
           <Button type="submit" class="w-full" variant="outline" disabled={isLoading}>
             <DiscordIcon class="mr-2 h-4 w-4" />
@@ -60,4 +69,4 @@
       </CardFooter>
     </Card>
   </div>
-</div> 
+</div>
