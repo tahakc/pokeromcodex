@@ -16,7 +16,7 @@ const createCollectionStore = () => {
         collection.add(romId);
         return collection;
       });
-      // Invalidate all pages that depend on collection state
+      // Single invalidation key affecting all components
       await invalidate('app:collection');
     },
     remove: async (romId: number) => {
@@ -24,7 +24,7 @@ const createCollectionStore = () => {
         collection.delete(romId);
         return collection;
       });
-      // Invalidate all pages that depend on collection state
+      // Single invalidation key affecting all components
       await invalidate('app:collection');
     },
     has: (romId: number) => {

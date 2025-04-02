@@ -15,7 +15,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     const userIds = locals.allUserIds || [locals.user.id];
     
     const { data: collectionItem } = await locals.supabase
-      .from('collection')
+      .from('collections')
       .select('id')
       .in('user_id', userIds)
       .eq('rom_id', rom.id)

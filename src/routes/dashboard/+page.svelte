@@ -117,12 +117,12 @@
               <button 
                 type="button"
                 class="flex items-center gap-3 group cursor-pointer text-left w-full hover:bg-muted/50 p-1 rounded-md transition-colors"
-                on:click={() => handleRomClick(item.rom.slug)}
-                aria-label="View details for {item.rom.name}"
+                on:click={() => handleRomClick(item.slug)}
+                aria-label="View details for {item.name}"
               >
                 <div class="relative h-12 w-12 overflow-hidden rounded bg-muted">
-                  {#if item.rom.image}
-                    <img src={item.rom.image} alt={item.rom.name} class="h-full w-full object-cover" />
+                  {#if item.image}
+                    <img src={item.image} alt={item.name} class="h-full w-full object-cover" />
                   {:else}
                     <div class="flex h-full items-center justify-center">
                       <Gamepad2 class="h-6 w-6 text-muted-foreground/50" />
@@ -130,13 +130,13 @@
                   {/if}
                 </div>
                 <div class="flex-1 min-w-0">
-                  <p class="font-medium truncate group-hover:text-primary">{item.rom.name}</p>
+                  <p class="font-medium truncate group-hover:text-primary">{item.name}</p>
                   <div class="flex items-center gap-2 mt-1">
-                    {#if item.rom.console}
-                      <Badge variant="outline" class="text-xs">{item.rom.console}</Badge>
+                    {#if item.console}
+                      <Badge variant="outline" class="text-xs">{item.console}</Badge>
                     {/if}
-                    {#if item.rom.base_game && item.rom.base_game.length > 0}
-                      <Badge variant="secondary" class="text-xs">{item.rom.base_game[0]}</Badge>
+                    {#if item.base_game && item.base_game.length > 0}
+                      <Badge variant="secondary" class="text-xs">{item.base_game[0]}</Badge>
                     {/if}
                   </div>
                 </div>

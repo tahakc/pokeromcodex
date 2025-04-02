@@ -45,11 +45,14 @@ export const load: PageServerLoad = async ({ url, locals }) => {
     
     // If user is logged in, check which ROMs are in their collection
     if (locals.user) {
-      // Get user's collection items
+      // Get all user IDs associated with this account (from linked accounts)
+      const userIds = locals.allUserIds || [locals.user.id];
+
+      // Get user's collection items from all linked accounts
       const { data: collectionItems, error } = await locals.supabase
         .from('collections')
         .select('rom_id')
-        .eq('user_id', locals.user.id);
+        .in('user_id', userIds);
       
       if (!error && collectionItems) {
         // Create a set of collection ROM IDs for quick lookup

@@ -5,6 +5,7 @@ import { sequence } from '@sveltejs/kit/hooks'
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public'
 
 const supabase: Handle = async ({ event, resolve }) => {
+
   event.locals.supabase = createServerClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
     cookies: {
       getAll: () => event.cookies.getAll(),
@@ -63,8 +64,12 @@ const authGuard: Handle = async ({ event, resolve }) => {
       // Extract all unique user IDs from the identities
       const associatedIds = new Set<string>([event.locals.user.id]);
       
+      // Only include IDs that match the UUID format (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      
+      // Filter and add valid UUID identities
       identities.identities.forEach(identity => {
-        if (identity.id && !associatedIds.has(identity.id)) {
+        if (identity.id && uuidRegex.test(identity.id)) {
           associatedIds.add(identity.id);
         }
       });

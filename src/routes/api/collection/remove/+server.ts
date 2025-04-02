@@ -2,15 +2,21 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
+
   if (!locals.user) {
     return json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    const { romId } = await request.json();
+    const body = await request.json();
+
     
-    if (!romId) {
-      return json({ success: false, error: 'ROM ID is required' }, { status: 400 });
+    // Extract romId and ensure it's a number
+    const romId = typeof body.romId === 'number' ? body.romId : Number(body.romId);
+    
+    if (isNaN(romId) || !romId) {
+      console.error('Invalid ROM ID received in remove endpoint:', body.romId, 'Type:', typeof body.romId);
+      return json({ success: false, error: 'ROM ID is required and must be a valid number' }, { status: 400 });
     }
     
     // Get all user IDs associated with this account (from linked accounts)

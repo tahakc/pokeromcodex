@@ -1,6 +1,5 @@
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public'
 import { createBrowserClient, createServerClient } from '@supabase/ssr'
-import { error, redirect } from '@sveltejs/kit'
 import { isBrowser } from '$lib/utils'
 import type { LayoutLoad } from './$types'
 import { collectionStore } from '$lib/stores/collection'
@@ -18,12 +17,15 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
   // If we have a user session, get their collection and initialize the store
   if (session?.user) {
     try {
-      // Get user's collection
+      // Get user's collection with linked accounts if available
+      const userIds = data.allUserIds?.length > 0 ? data.allUserIds : [session.user.id];
+      
+      // Query collections using the appropriate user IDs
       const { data: collectionData } = await supabase
         .from('collections')
         .select('rom_id')
-        .eq('user_id', session.user.id);
-      
+        .in('user_id', userIds);
+
       if (collectionData) {
         // Extract the ROM IDs
         const collectionIds = collectionData.map(item => item.rom_id);
@@ -36,7 +38,7 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
   }
 
   const user = session?.user || null
-  
+
   // We need to return identities here to satisfy the PageData interface
   // This will be properly populated in the +page.ts files that need it
   return {

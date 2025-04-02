@@ -19,9 +19,7 @@ export const load: PageServerLoad = async ({ locals }) => {
     .in('user_id', userIds)
     .order('added_at', { ascending: false });
 
-  if (collectionError) {
-    console.error('Error fetching user collection:', collectionError);
-  }
+  // Errors will appear in server logs
   
   // Create a set of collection ROM IDs for faster lookups
   const collectionRomIds = new Set(collection ? collection.map((item: any) => item.rom_id) : []);
@@ -43,9 +41,7 @@ export const load: PageServerLoad = async ({ locals }) => {
     .order('views', { ascending: false })
     .limit(6);
 
-  if (recommendationsError) {
-    console.error('Error fetching recommendations:', recommendationsError);
-  }
+  // Errors appear in server logs
 
   // Add isInCollection property to recommendations
   const recommendationsWithCollectionState = recommendations ? recommendations.map((rom: any) => ({
