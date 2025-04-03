@@ -264,6 +264,26 @@
     (acc, filters) => acc + filters.length,
     0
   );
+
+  function clearAllFilters() {
+    // Reset all filters
+    selectedFilters = {
+      baseGame: [],
+      status: [],
+      difficulty: [],
+      features: []
+    };
+
+    const url = new URL(window.location.href);
+    
+    // Remove all filter parameters but keep search query and pagination
+    Array.from(url.searchParams.keys())
+      .filter(key => Object.keys(selectedFilters).includes(key))
+      .forEach(key => url.searchParams.delete(key));
+      
+    // Navigate and search (keepFocus maintains user's current input focus)
+    goto(url, { keepFocus: true }).then(() => performSearch());
+  }
 </script>
 
 <div class="space-y-4">
@@ -284,6 +304,18 @@
       transition:slide={{ duration: 200 }}
       class="overflow-hidden rounded-lg border bg-card p-4 shadow-sm"
     >
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-sm font-medium text-muted-foreground">Filters</h3>
+        {#if activeFiltersCount > 0}
+          <Button
+            size="sm"
+            on:click={clearAllFilters}
+            class="h-7 px-2 bg-primary text-primary-foreground hover:bg-primary/90"
+          >
+            Clear All ({activeFiltersCount})
+          </Button>
+        {/if}
+      </div>
       <Filters
         {filterOptions}
         {selectedFilters}
