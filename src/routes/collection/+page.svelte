@@ -245,7 +245,8 @@
         {#if filteredCollection.length > 0}
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {#each filteredCollection as item}
-              <Card class="h-full flex flex-col hover:shadow-lg transition-shadow">
+              <div class="h-full">
+                <Card class="h-full flex flex-col hover:shadow-lg transition-shadow">
                 <a href="/roms/{item.slug || slugify(item.name)}">
                   <CardHeader class="p-0">
                     <div class="relative aspect-video w-full overflow-hidden bg-muted">
@@ -301,6 +302,7 @@
                   />
                 </CardFooter>
               </Card>
+              </div>
             {/each}
           </div>
         {:else}
@@ -330,10 +332,13 @@
         {#if recommendations.length > 0}
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {#each recommendations as rom}
-              <Card class="overflow-hidden group hover:border-primary transition-colors">
-                <div 
-                  class="relative h-40 bg-muted cursor-pointer" 
-                  on:click={() => handleRomClick(rom.slug)}
+              <div class="h-full">
+                <Card class="overflow-hidden group hover:border-primary transition-colors h-full flex flex-col">
+                <button 
+                  type="button"
+                  class="relative h-40 bg-muted cursor-pointer w-full text-left" 
+                  onclick={() => handleRomClick(rom.slug)}
+                  onkeydown={(e) => e.key === 'Enter' && handleRomClick(rom.slug)}
                 >
                   {#if rom.image}
                     <img 
@@ -354,15 +359,17 @@
                       </Badge>
                     </div>
                   {/if}
-                </div>
+                </button>
                 
                 <CardContent class="p-6">
-                  <h3 
-                    class="text-lg font-semibold mb-2 cursor-pointer hover:text-primary transition-colors"
-                    on:click={() => handleRomClick(rom.slug)}
+                  <button 
+                    type="button"
+                    class="text-lg font-semibold mb-2 text-left hover:text-primary transition-colors w-full"
+                    onclick={() => handleRomClick(rom.slug)}
+                    onkeydown={(e) => e.key === 'Enter' && handleRomClick(rom.slug)}
                   >
                     {rom.name}
-                  </h3>
+                  </button>
                   
                   <div class="flex flex-wrap gap-2 mb-4">
                     {#if rom.base_game && rom.base_game.length > 0}
@@ -390,6 +397,7 @@
                   </div>
                 </CardContent>
               </Card>
+              </div>
             {/each}
           </div>
         {:else}

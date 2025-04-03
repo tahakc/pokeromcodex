@@ -2,7 +2,6 @@
   import { page } from "$app/stores";
   import { cn } from "$lib/utils";
   import { Button } from "$lib/components/ui/button";
-  import ThemeToggle from "./theme-toggle.svelte";
   import { Sheet, SheetContent, SheetTrigger } from "$lib/components/ui/sheet";
   import { Menu } from "lucide-svelte";
   import { fly } from "svelte/transition";
@@ -84,7 +83,6 @@
         {/each}
       </div>
       
-      <ThemeToggle />
       
       {#if $page?.data?.session}
         <UserDropdown />

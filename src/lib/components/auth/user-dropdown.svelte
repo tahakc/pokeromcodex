@@ -5,6 +5,8 @@
   import { goto } from '$app/navigation'
   import { enhance } from '$app/forms'
   import { invalidate } from '$app/navigation'
+  import { Sun, Moon } from "lucide-svelte"
+  import { browser } from "$app/environment"
 
   // Import Shadcn dropdown menu components
   import {
@@ -22,6 +24,31 @@
   $: avatarUrl = user?.user_metadata?.avatar_url
 
   let open = false
+  let isDark = false
+
+  if (browser) {
+    isDark = document.documentElement.classList.contains('dark');
+
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+      if (!localStorage.theme) {
+        toggleTheme(e.matches);
+      }
+    });
+  }
+
+  function toggleTheme(forceDark: boolean | null = null) {
+    isDark = forceDark !== null ? forceDark : !isDark;
+
+    if (browser) {
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+        localStorage.theme = 'dark';
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.theme = 'light';
+      }
+    }
+  }
 
   // Immediately reset padding when dropdown opens
   $: if (open && typeof document !== 'undefined') {
@@ -71,6 +98,17 @@
     <DropdownMenuSeparator />
     <DropdownMenuItem class="cursor-pointer" on:click={handleDashboardClick}>Dashboard</DropdownMenuItem>
     <DropdownMenuItem class="cursor-pointer" on:click={handleProfileClick}>Profile</DropdownMenuItem>
+    <DropdownMenuItem class="cursor-pointer" on:click={() => toggleTheme()}>
+      <div class="flex items-center gap-2">
+        {#if isDark}
+          <Moon class="h-[1rem] w-[1rem]" />
+          <span>Dark Theme</span>
+        {:else}
+          <Sun class="h-[1rem] w-[1rem]" />
+          <span>Light Theme</span>
+        {/if}
+      </div>
+    </DropdownMenuItem>
     <DropdownMenuSeparator />
     <a
       href="/"

@@ -115,7 +115,9 @@
         data-index={index}
         animate:flip={{ duration: 300 }}
       >
-        <RomCard {rom} displayRoms={displayRoms} />
+        <div class="h-full">
+          <RomCard {rom} displayRoms={displayRoms} />
+        </div>
       </div>
     {/each}
   </div>

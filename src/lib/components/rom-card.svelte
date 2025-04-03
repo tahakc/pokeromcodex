@@ -30,7 +30,7 @@
   }
 </script>
 
-<div class="group block">
+<div class="group block h-full">
   {#if rom.isLoading}
   <Card class="overflow-hidden transition-all duration-300 animate-pulse h-full flex flex-col">
     <CardHeader class="p-0">
@@ -38,7 +38,7 @@
         <div class="absolute inset-0 bg-muted"></div>
       </div>
     </CardHeader>
-    <CardContent class="space-y-2.5 p-4 flex-grow">
+    <CardContent class="space-y-2.5 p-4 flex-grow flex flex-col">
       <div class="space-y-1.5">
         <div class="h-6 w-3/4 rounded bg-muted"></div>
         <div class="h-4 w-1/2 rounded bg-muted"></div>
@@ -51,14 +51,14 @@
         <div class="h-6 w-28 rounded bg-muted"></div>
       </div>
     </CardContent>
-    <CardFooter class="p-4 pt-0">
+    <CardFooter class="p-4 pt-0 flex-shrink-0">
       <div class="h-4 w-32 rounded bg-muted"></div>
     </CardFooter>
   </Card>
   {:else}
   <Card class="overflow-hidden transition-all duration-300 hover:shadow-xl dark:hover:shadow-primary/10 h-full flex flex-col">
     <a href="/roms/{rom.slug}" class="block">
-      <CardHeader class="p-0">
+      <CardHeader class="p-0 flex-shrink-0">
         <div class="relative aspect-video w-full overflow-hidden bg-muted">
           {#if rom.image}
             <!-- Loading spinner that shows while image is loading -->
@@ -101,7 +101,7 @@
         </div>
       </CardHeader>
     </a>
-    <CardContent class="space-y-2.5 p-4 flex-grow">
+    <CardContent class="space-y-2.5 p-4 flex-grow flex flex-col">
       <div class="space-y-1.5">
         <div class="flex items-center">
           <a href="/roms/{rom.slug}" class="flex-grow min-w-0 pr-2 max-w-[85%]">
@@ -121,7 +121,7 @@
           by {rom.author? formatRomAuthors(rom.author): 'Unknown'}
         </p>
       </div>
-      <div class="flex flex-wrap gap-1.5">
+      <div class="flex flex-wrap gap-1.5 mb-auto">
         {#if rom.base_game && rom.base_game.length > 0}
           {#each rom.base_game.slice(0, 2) as game}
             <Badge
@@ -161,7 +161,7 @@
         {/if}
       </div>
     </CardContent>
-    <CardFooter class="p-4 pt-0 mt-auto">
+    <CardFooter class="p-4 pt-0 mt-auto flex-shrink-0">
       <div class="flex items-center gap-2 text-xs text-muted-foreground">
         <Sparkles class="h-3 w-3" />
         <span>Updated {formattedDate}</span>

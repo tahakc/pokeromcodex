@@ -19,8 +19,10 @@ export const load: PageServerLoad = async ({ locals }) => {
     .in('user_id', userIds)
     .order('added_at', { ascending: false });
 
-  // No need to log errors as they will already appear in server logs
-  
+  if (collectionError) {
+    console.error('Error fetching user collection:', collectionError);
+  }
+
   // Create a set of collection ROM IDs for faster lookups, just like in collection page
   const collectionRomIds = new Set(collection ? collection.map((item: any) => item.rom_id) : []);
 
@@ -48,4 +50,4 @@ export const load: PageServerLoad = async ({ locals }) => {
     identities: [],
     collectionIds: Array.from(collectionRomIds)
   };
-}; 
+};

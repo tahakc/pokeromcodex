@@ -19,11 +19,13 @@ export const load: PageServerLoad = async ({ locals }) => {
     .in('user_id', userIds)
     .order('added_at', { ascending: false });
 
-  // Errors will appear in server logs
-  
+  if (collectionError) {
+    console.error('Error fetching user collection:', collectionError);
+  }
+
   // Create a set of collection ROM IDs for faster lookups
   const collectionRomIds = new Set(collection ? collection.map((item: any) => item.rom_id) : []);
-  
+
   // Transform the collection data for easier consumption in the UI
   const collectionItems = collection ? collection.map((item: any) => ({
     ...item.rom,
@@ -33,7 +35,7 @@ export const load: PageServerLoad = async ({ locals }) => {
     // Add a flag to indicate if this ROM was added by a linked account
     addedByLinkedAccount: item.user_id !== locals.user?.id
   })) : [];
-  
+
   const { data: recommendations, error: recommendationsError } = await locals.supabase
     .from('romslist')
     .select('*')
@@ -41,7 +43,9 @@ export const load: PageServerLoad = async ({ locals }) => {
     .order('views', { ascending: false })
     .limit(6);
 
-  // Errors appear in server logs
+  if (recommendationsError) {
+    console.error('Error fetching recommendations:', recommendationsError);
+  }
 
   // Add isInCollection property to recommendations
   const recommendationsWithCollectionState = recommendations ? recommendations.map((rom: any) => ({
