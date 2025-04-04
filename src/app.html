@@ -7,13 +7,23 @@
 		<script>
 			const theme = localStorage.theme || 'system';
 			const systemThemeDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-			
+
 			if (theme === 'dark' || (theme === 'system' && systemThemeDark)) {
 				document.documentElement.classList.add('dark');
 			} else {
 				document.documentElement.classList.remove('dark');
 			}
 		</script>
+		<!-- Critical CSS for LCP performance -->
+		<style>
+			/* Critical styles for fastest rendering of LCP elements */
+			.absolute { position: absolute; }
+			.inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+			.h-full { height: 100%; }
+			.w-full { width: 100%; }
+			.object-cover { object-fit: cover; }
+			.aspect-video { position: relative; aspect-ratio: 16/9; overflow: hidden; }
+		</style>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">

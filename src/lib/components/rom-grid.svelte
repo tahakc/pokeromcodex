@@ -17,20 +17,24 @@
   const setupIntersectionObserver = () => {
     if (!browser || !window.IntersectionObserver) return;
     
+    // Use a more efficient intersection observer with higher rootMargin
+    // to start loading before elements enter viewport
     observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           const element = entry.target as HTMLElement;
           const index = parseInt(element.dataset.index || '0', 10);
           
+          // Add visible class to trigger the animation
           element.classList.add('is-visible');
           
+          // Stop observing once visible
           observer?.unobserve(entry.target);
         }
       });
     }, {
-      rootMargin: '200px',
-      threshold: 0.1
+      rootMargin: '300px', // Increased for earlier loading
+      threshold: 0.01 // Lower threshold for quicker triggering
     });
   };
   
@@ -88,18 +92,26 @@
   .priority-item {
     content-visibility: auto;
     contain-intrinsic-size: auto 300px;
+    will-change: transform;
   }
   
   .rom-card-container {
     opacity: 0;
     transform: translateY(10px);
     transition: opacity 0.3s ease, transform 0.3s ease;
+    contain: layout style;
   }
   
   .rom-card-container.is-visible,
   .rom-card-container.priority-item {
     opacity: 1;
     transform: translateY(0);
+  }
+  
+  /* Optimize for first visible items (LCP candidates) */
+  .rom-card-container:nth-child(-n+2) {
+    contain: none !important;
+    content-visibility: visible !important;
   }
 </style>
 
@@ -111,12 +123,13 @@
   <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
     {#each displayRoms as rom, index (rom.slug || `item-${index}`)}
       <div 
-        class={`rom-card-container h-full ${index < 4 ? 'priority-item is-visible' : ''}`}
+        class={`rom-card-container h-full ${index < 8 ? 'priority-item is-visible' : ''}`}
         data-index={index}
         animate:flip={{ duration: 300 }}
+        style={index < 2 ? 'contain: none; content-visibility: visible;' : ''}
       >
         <div class="h-full">
-          <RomCard {rom} displayRoms={displayRoms} />
+          <RomCard {rom} {index} />
         </div>
       </div>
     {/each}

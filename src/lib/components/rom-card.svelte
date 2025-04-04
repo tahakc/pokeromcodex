@@ -9,7 +9,8 @@
   import { onMount } from "svelte";
 
   export let rom: Rom & { slug: string; isLoading?: boolean; isInCollection?: boolean };
-  export let displayRoms: (Rom & { slug: string; isLoading?: boolean })[] = [];
+  export let index: number = -1; // Index parameter for prioritizing image loading
+  // Remove displayRoms as it's no longer needed
 
   $: formattedDate = rom.date_updated && !rom.isLoading
     ? format(parse(rom.date_updated, "yyyy/MM/dd", new Date()), "MMM d, yyyy")
@@ -61,28 +62,13 @@
       <CardHeader class="p-0 flex-shrink-0">
         <div class="relative aspect-video w-full overflow-hidden bg-muted">
           {#if rom.image}
-            <!-- Loading spinner that shows while image is loading -->
-            {#if !imageLoaded}
-              <div class="absolute inset-0 flex items-center justify-center z-10 bg-muted">
-                <div class="h-10 w-10 rounded-full border-4 border-primary/30 border-t-primary animate-spin"></div>
-              </div>
-            {/if}
-            
             <img
               src={getOptimizedImageUrl(rom.image, 768)}
               alt={rom.name}
               class="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-              loading={rom.slug === displayRoms[0]?.slug || rom.slug === displayRoms[1]?.slug || rom.slug === displayRoms[2]?.slug || rom.slug === displayRoms[3]?.slug ? "eager" : "lazy"}
-              decoding={rom.slug === displayRoms[0]?.slug || rom.slug === displayRoms[1]?.slug ? "sync" : "async"}
-              srcset={`${getOptimizedImageUrl(rom.image, 384)} 384w,
-                      ${getOptimizedImageUrl(rom.image, 640)} 640w,
-                      ${getOptimizedImageUrl(rom.image, 768)} 768w,
-                      ${getOptimizedImageUrl(rom.image, 1024)} 1024w`}
-              sizes="(max-width: 640px) 100vw,
-                     (max-width: 768px) 50vw,
-                     (max-width: 1024px) 33vw,
-                     25vw"
-              fetchpriority={rom.slug === displayRoms[0]?.slug || rom.slug === displayRoms[1]?.slug ? "high" : "auto"}
+              loading={index < 4 ? "eager" : "lazy"}
+              decoding={index < 2 ? "sync" : "async"}
+              fetchpriority={index === 0 ? "high" : "auto"}
               on:load={handleImageLoaded}
             />
           {:else}

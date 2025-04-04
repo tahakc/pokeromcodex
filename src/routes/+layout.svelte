@@ -1,7 +1,6 @@
 <script lang="ts">
 	import "../app.css";
 	import Navigation from "$lib/components/navigation.svelte";
-	import { isAnyModalOpen } from "$lib/stores/modal";
 	import { invalidate } from '$app/navigation'
 	import { onMount } from 'svelte'
 	import { Toaster } from "$lib/components/ui/sonner";
@@ -18,7 +17,7 @@
 			await invalidate('supabase:auth');
 			await invalidate('app:auth');
 			await invalidate('/');
-			
+
 			// Handle sign in event
 			if (event === 'SIGNED_IN') {
 				// Only show toast if not coming from callback page
@@ -28,31 +27,31 @@
 				}
 			}
 		});
-		
+
 		// Check for auth state flags and handle them
 		if (typeof localStorage !== 'undefined') {
 			// Handle fresh login flag
 			const freshLogin = localStorage.getItem('freshLogin');
 			if (freshLogin === 'true') {
 				localStorage.removeItem('freshLogin');
-				
+
 				// Force invalidation to update UI
 				invalidate('supabase:auth');
 				invalidate('app:auth');
 			}
-			
+
 			// Handle sign out flag
 			const signedOut = localStorage.getItem('signedOut');
 			if (signedOut === 'true') {
 				localStorage.removeItem('signedOut');
-				
+
 				// Force invalidation to update UI after sign out
 				invalidate('supabase:auth');
 				invalidate('app:auth');
 				invalidate('/');
 			}
 		}
-		
+
 		return () => data.subscription.unsubscribe();
 	})
 </script>
@@ -63,7 +62,7 @@
 			max-width: 100%;
 			overflow-x: hidden;
 		}
-		
+
 		html.modal-open,
 		body.modal-open {
 			touch-action: none;
@@ -79,6 +78,16 @@
 		img, svg, video, canvas, audio, iframe, embed, object {
 			display: block;
 			max-width: 100%;
+		}
+		/* Optimize LCP image rendering */
+		img.object-cover {
+			will-change: transform;
+			transform: translateZ(0);
+			backface-visibility: hidden;
+		}
+		/* Prioritize rendering of visible elements */
+		.priority-item img {
+			contain: paint;
 		}
 		table {
 			display: block;
@@ -99,10 +108,10 @@
 	<div class="relative overflow-hidden">
 		{@render children()}
 	</div>
-	<Toaster 
-		position="top-center" 
-		closeButton 
-		richColors 
+	<Toaster
+		position="top-center"
+		closeButton
+		richColors
 		duration={6000}
 	/>
 </div>
