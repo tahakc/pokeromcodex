@@ -23,7 +23,14 @@
 			.w-full { width: 100%; }
 			.object-cover { object-fit: cover; }
 			.aspect-video { position: relative; aspect-ratio: 16/9; overflow: hidden; }
+			/* Prevent Layout Shifts */
+			img { height: auto; display: block; }
+			/* LCP Optimization */
+			.lcp-image { content-visibility: visible; will-change: transform; contain-intrinsic-size: 768px 432px; }
 		</style>
+		<!-- Preconnect to Supabase for images -->
+		<link rel="preconnect" href="https://cfowqsaskmpjmpuidtvn.supabase.co" crossorigin="anonymous">
+
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">

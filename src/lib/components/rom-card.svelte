@@ -11,7 +11,7 @@
 
   export let rom: Rom & { slug: string; isLoading?: boolean; isInCollection?: boolean };
   export let index: number = -1; // Index parameter for prioritizing image loading
-  // Remove displayRoms as it's no longer needed
+  export let priority: boolean = false; // Whether this card contains the LCP candidate image
 
   $: formattedDate = rom.date_updated && !rom.isLoading
     ? format(parse(rom.date_updated, "yyyy/MM/dd", new Date()), "MMM d, yyyy")
@@ -68,10 +68,10 @@
             <img
               src={imageProps.src}
               alt={rom.name}
-              class="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-              loading={index < 4 ? "eager" : "lazy"}
-              decoding={index < 2 ? "sync" : "async"}
-              fetchpriority={index === 0 ? "high" : "auto"}
+              class={`absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105${priority ? ' lcp-image' : ''}`}
+              loading={priority || index === 0 ? "eager" : "lazy"}
+              decoding={priority || index === 0 ? "sync" : "async"}
+              fetchpriority={priority || index === 0 ? "high" : "auto"}
               on:load={handleImageLoaded}
               width={imageDims.width}
               height={imageDims.height}

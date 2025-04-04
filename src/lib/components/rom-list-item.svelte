@@ -10,6 +10,7 @@
 
   export let rom: Rom & { slug: string; isLoading?: boolean; isInCollection?: boolean };
   export let displayRoms: (Rom & { slug: string; isLoading?: boolean })[] = [];
+  export let priority: boolean = false; // Whether this item contains the LCP candidate image
 
   $: formattedDate = rom.date_updated && !rom.isLoading
     ? format(parse(rom.date_updated, "yyyy/MM/dd", new Date()), "MMM d, yyyy")
@@ -111,13 +112,13 @@
               <img
                 src={imageProps.src}
                 alt={rom.name}
-                class="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                loading={rom.slug === displayRoms[0]?.slug || rom.slug === displayRoms[1]?.slug ? "eager" : "lazy"}
-                decoding={rom.slug === displayRoms[0]?.slug ? "sync" : "async"}
+                class={`absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105${priority ? ' lcp-image' : ''}`}
+                loading={priority || rom.slug === displayRoms[0]?.slug ? "eager" : "lazy"}
+                decoding={priority || rom.slug === displayRoms[0]?.slug ? "sync" : "async"}
                 width={imageDims.width}
                 height={imageDims.height}
                 sizes={imageProps.sizes}
-                fetchpriority={rom.slug === displayRoms[0]?.slug ? "high" : "auto"}
+                fetchpriority={priority || rom.slug === displayRoms[0]?.slug ? "high" : "auto"}
                 on:load={handleImageLoaded}
               />
             {:else}

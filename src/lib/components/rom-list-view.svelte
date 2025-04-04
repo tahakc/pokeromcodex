@@ -9,6 +9,7 @@
   // Accept either Rom objects or collection items with rom property
   export let roms: (Rom & { slug: string; isInCollection?: boolean } | { rom: Rom & { slug: string }; added_at?: string })[];
   export let isLoading = false;
+  export let isPriority = false; // Flag to indicate this is the main content (for LCP optimization)
   
   let initialLoad = true;
   let hasInteracted = false;
@@ -124,9 +125,10 @@
       <div 
         class={`rom-list-item-container ${index < 4 ? 'priority-item is-visible' : ''}`}
         data-index={index}
+        data-priority={isPriority && index === 0 ? 'true' : 'false'}
         animate:flip={{ duration: 300 }}
       >
-        <RomListItem {rom} displayRoms={processedRoms} />
+        <RomListItem {rom} displayRoms={processedRoms} priority={isPriority && index === 0} />
       </div>
     {/each}
   </div>

@@ -8,6 +8,7 @@
 
   export let roms: (Rom & { slug: string; isInCollection?: boolean })[];
   export let isLoading = false;
+  export let isPriority = false; // Flag to indicate this is the main content (for LCP optimization)
   
   let initialLoad = true;
   let hasInteracted = false;
@@ -129,7 +130,7 @@
         style={index < 2 ? 'contain: none; content-visibility: visible;' : ''}
       >
         <div class="h-full">
-          <RomCard {rom} {index} />
+          <RomCard {rom} index={isPriority && index === 0 ? 0 : index} priority={isPriority && index === 0} />
         </div>
       </div>
     {/each}

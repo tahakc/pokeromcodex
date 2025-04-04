@@ -29,6 +29,7 @@
   let isNavigating = $state(false);
   let initialLoadComplete = false; // New flag to track initial load
   let hasInteracted = false; // Track if user has interacted with the page
+  let preloadedFirstImage = false; // Track if we've preloaded the first image
   let layoutMode = $state(browser && localStorage.getItem('layoutMode') ? localStorage.getItem('layoutMode') : 'grid');
 
   $effect(() => {
@@ -52,9 +53,34 @@
     }
   });
 
+  // Function to preload the first image for better LCP performance
+  function preloadFirstImage() {
+    if (!browser || preloadedFirstImage || !filteredRoms || !filteredRoms.length || !filteredRoms[0].image) return;
+    
+    preloadedFirstImage = true;
+    const firstImage = filteredRoms[0].image;
+    const imageUrl = getOptimizedImageUrl(firstImage, 768);
+    
+    // Create preload link
+    const linkEl = document.createElement('link');
+    linkEl.rel = 'preload';
+    linkEl.as = 'image';
+    linkEl.href = imageUrl;
+    linkEl.setAttribute('fetchpriority', 'high');
+    document.head.appendChild(linkEl);
+    
+    // Also try to prefetch with JavaScript
+    const img = new Image();
+    img.setAttribute('fetchpriority', 'high');
+    img.src = imageUrl;
+  }
+
   onMount(() => {
     isInitialized = true;
 
+    // Preload first image immediately for better LCP
+    preloadFirstImage();
+    
     // Set a flag to skip the initial search from the Search component
     // This prevents the double loading issue
     setTimeout(() => {
@@ -354,9 +380,9 @@
       </div>
 
       {#if layoutMode === 'grid'}
-        <RomGrid roms={filteredRoms} {isLoading} />
+        <RomGrid roms={filteredRoms} {isLoading} isPriority={!isLoading && filteredRoms.length > 0} />
       {:else}
-        <RomListView roms={filteredRoms.map((rom: Rom & { slug: string }) => ({ ...rom, slug: rom.slug }))} {isLoading} />
+        <RomListView roms={filteredRoms.map((rom: Rom & { slug: string }) => ({ ...rom, slug: rom.slug }))} {isLoading} isPriority={!isLoading && filteredRoms.length > 0} />
       {/if}
 
       {#if totalPages > 1}
