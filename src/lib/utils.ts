@@ -3,7 +3,6 @@ import { twMerge } from "tailwind-merge";
 import { cubicOut } from "svelte/easing";
 import type { TransitionConfig } from "svelte/transition";
 import { browser } from "$app/environment";
-import { PUBLIC_SITE_URL } from '$env/static/public';
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -86,7 +85,28 @@ export function getOptimizedImageUrl(
 ): string {
 	if (!url) return "";
 
-	// Use the simplest approach that works reliably: direct URL with width parameter
+	// Check if URL is from Cloudflare (contains Supabase)
+	if (url.includes('supabase.co') && url.includes('storage')) {
+		// Parse the URL to get its components
+		const parsedUrl = new URL(url);
+
+		// Check if there are existing params - preserve them except for width
+		const params = new URLSearchParams(parsedUrl.search);
+
+		// Set the Cloudflare resizing parameters
+		params.set('width', width.toString());
+		if (options?.quality) {
+			params.set('quality', options.quality.toString());
+		}
+
+		// Clear the search and set the new parameters
+		parsedUrl.search = params.toString();
+
+		// Return the transformed URL
+		return parsedUrl.toString();
+	}
+
+	// For other URLs, just append the width parameter
 	return `${url}?width=${width}`;
 }
 

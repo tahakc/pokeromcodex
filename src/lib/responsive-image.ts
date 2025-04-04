@@ -33,9 +33,12 @@ export function getResponsiveImageProps(url: string, index: number = -1): {
     };
   }
   
-  // Use the URL directly without trying to modify it
+  // Set appropriate image sizes based on viewport
+  // This ensures we load appropriately sized images for each screen size
+  const responsiveWidth = index === 0 ? width : 400; // First image is LCP, so use full width
+  
   return {
-    src: getOptimizedImageUrl(url, width),
+    src: getOptimizedImageUrl(url, responsiveWidth, { quality: 85 }),
     width: width.toString(),
     height: height.toString(),
     sizes: '(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw'
