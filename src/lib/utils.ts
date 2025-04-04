@@ -85,29 +85,21 @@ export function getOptimizedImageUrl(
 ): string {
 	if (!url) return "";
 
-	// Check if URL is from Cloudflare (contains Supabase)
+	// Use Cloudflare Image Resizing service directly
+	const quality = options?.quality || 85;
+	const format = options?.format || 'auto';
+	const fit = options?.fit || 'cover';
+
+	// For Supabase storage URLs, use Cloudflare's image resizing
 	if (url.includes('supabase.co') && url.includes('storage')) {
-		// Parse the URL to get its components
-		const parsedUrl = new URL(url);
-
-		// Check if there are existing params - preserve them except for width
-		const params = new URLSearchParams(parsedUrl.search);
-
-		// Set the Cloudflare resizing parameters
-		params.set('width', width.toString());
-		if (options?.quality) {
-			params.set('quality', options.quality.toString());
-		}
-
-		// Clear the search and set the new parameters
-		parsedUrl.search = params.toString();
-
-		// Return the transformed URL
-		return parsedUrl.toString();
+		// Example: /cdn-cgi/image/width=400,quality=85,format=auto,fit=cover/https://...
+		const params = `width=${width},quality=${quality},format=${format},fit=${fit}`;
+		const fullUrl = url.startsWith('http') ? url : `https://${url}`;
+		return `/cdn-cgi/image/${params}/${fullUrl}`;
 	}
 
-	// For other URLs, just append the width parameter
-	return `${url}?width=${width}`;
+	// For other URLs, just append width parameter
+	return `${url}?width=${width}&quality=${quality}`;
 }
 
 export function formatRomAuthors(authors: string | undefined): string {
