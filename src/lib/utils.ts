@@ -86,26 +86,8 @@ export function getOptimizedImageUrl(
 ): string {
 	if (!url) return "";
 
-	const {
-		quality = 80,
-		format = 'auto',
-		fit = 'cover'
-	} = options || {};
-
-	// TESTING: Use direct URL approach for all environments to reduce load delay
-	// This should significantly reduce the load delay by bypassing Cloudflare
+	// Use the simplest approach that works reliably: direct URL with width parameter
 	return `${url}?width=${width}`;
-
-	/* Original implementation - commented out for testing
-	// For local development, use direct URL with simple resize
-	if (isLocalEnvironment()) {
-		return `${url}?width=${width}`;
-	}
-
-	// Use Cloudflare's image optimization for all images
-	// This avoids Supabase's paid image transformation costs
-	return `${PUBLIC_SITE_URL}/cdn-cgi/image/width=${width},quality=${quality},format=${format},fit=${fit}/${url}`;
-	*/
 }
 
 export function formatRomAuthors(authors: string | undefined): string {

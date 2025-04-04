@@ -4,6 +4,7 @@
   import { Card, CardContent, CardFooter, CardHeader } from "$lib/components/ui/card";
   import { Badge } from "$lib/components/ui/badge";
   import { cn, formatRomAuthors, getOptimizedImageUrl } from "$lib/utils";
+  import { getResponsiveImageProps, getImageDimensions } from "$lib/responsive-image";
   import { Gamepad2, Star, Sparkles } from "lucide-svelte";
   import CollectionButton from "$lib/components/collection/collection-button.svelte";
   import { onMount } from "svelte";
@@ -62,14 +63,19 @@
       <CardHeader class="p-0 flex-shrink-0">
         <div class="relative aspect-video w-full overflow-hidden bg-muted">
           {#if rom.image}
+            {@const imageDims = getImageDimensions()}
+            {@const imageProps = getResponsiveImageProps(rom.image, index)}
             <img
-              src={getOptimizedImageUrl(rom.image, 768)}
+              src={imageProps.src}
               alt={rom.name}
               class="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               loading={index < 4 ? "eager" : "lazy"}
               decoding={index < 2 ? "sync" : "async"}
               fetchpriority={index === 0 ? "high" : "auto"}
               on:load={handleImageLoaded}
+              width={imageDims.width}
+              height={imageDims.height}
+              sizes={imageProps.sizes}
             />
           {:else}
             <div class="flex h-full items-center justify-center">

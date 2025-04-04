@@ -4,6 +4,7 @@
   import { Card } from "$lib/components/ui/card";
   import { Badge } from "$lib/components/ui/badge";
   import { cn, formatRomAuthors } from "$lib/utils";
+  import { getImageDimensions, getResponsiveImageProps } from "$lib/responsive-image";
   import { Gamepad2, Star, Sparkles, Calendar } from "lucide-svelte";
   import CollectionButton from "$lib/components/collection/collection-button.svelte";
 
@@ -105,17 +106,17 @@
                 </div>
               {/if}
               
+              {@const imageDims = getImageDimensions()}
+              {@const imageProps = getResponsiveImageProps(rom.image, 0)}
               <img
-                src={rom.image}
+                src={imageProps.src}
                 alt={rom.name}
                 class="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 loading={rom.slug === displayRoms[0]?.slug || rom.slug === displayRoms[1]?.slug ? "eager" : "lazy"}
                 decoding={rom.slug === displayRoms[0]?.slug ? "sync" : "async"}
-                srcset={`${rom.image}?width=384 384w,
-                        ${rom.image}?width=640 640w,
-                        ${rom.image}?width=768 768w,
-                        ${rom.image}?width=1024 1024w`}
-                sizes="(max-width: 640px) 100vw, 25vw"
+                width={imageDims.width}
+                height={imageDims.height}
+                sizes={imageProps.sizes}
                 fetchpriority={rom.slug === displayRoms[0]?.slug ? "high" : "auto"}
                 on:load={handleImageLoaded}
               />
