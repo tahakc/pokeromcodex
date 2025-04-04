@@ -1,10 +1,10 @@
 import type { PageServerLoad } from './$types';
 import { getAllRoms } from '$lib/services/rom-service';
 
-// Cache for the initial page load
-let initialPageCache: { data: any[], count: number } | null = null;
-let initialPageCacheTime = 0;
-const CACHE_TTL = 60 * 1000; // 1 minute cache
+// Global persistent cache with longer TTL to improve TTFB
+let GLOBAL_CACHE: { data: any[], count: number } | null = null;
+let GLOBAL_CACHE_TIME = 0;
+const CACHE_TTL = 15 * 60 * 1000; // 15 minute cache for dramatically better TTFB
 
 export const load: PageServerLoad = async ({ url, locals }) => {
   try {
@@ -22,19 +22,19 @@ export const load: PageServerLoad = async ({ url, locals }) => {
     
     // For the initial page load with no filters, use the cache
     if (page === 1 && !hasSearchParams) {
-      // Check if we have a valid cache
-      if (initialPageCache && (Date.now() - initialPageCacheTime < CACHE_TTL)) {
-        data = initialPageCache.data;
-        count = initialPageCache.count;
+      // Check if we have a valid global cache
+      if (GLOBAL_CACHE && (Date.now() - GLOBAL_CACHE_TIME < CACHE_TTL)) {
+        data = GLOBAL_CACHE.data;
+        count = GLOBAL_CACHE.count;
       } else {
         // Perform the search
         const result = await getAllRoms(page, pageSize);
         data = result.data;
         count = result.count;
         
-        // Cache the result for the initial page
-        initialPageCache = { data, count };
-        initialPageCacheTime = Date.now();
+        // Cache the result globally for future requests
+        GLOBAL_CACHE = { data, count };
+        GLOBAL_CACHE_TIME = Date.now();
       }
     } else {
       // Perform the search for non-cached requests

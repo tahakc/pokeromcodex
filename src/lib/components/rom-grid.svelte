@@ -10,6 +10,7 @@
   export let isLoading = false;
   export let isPriority = false; // Flag to indicate this is the main content (for LCP optimization)
   
+  // Set initialLoad to true to prevent showing 'no roms found' on initial page load
   let initialLoad = true;
   let hasInteracted = false;
   let visibleRoms: (Rom & { slug: string })[] = [];
@@ -40,10 +41,17 @@
   };
   
   onMount(() => {
-    // Mark initial load as complete after a short delay
-    setTimeout(() => {
+    // Only mark initial load as complete after a very short delay
+    // This ensures we never show 'no roms found' during the initial page load
+    if (roms.length > 0) {
+      // If we have roms, mark as not initial load immediately
       initialLoad = false;
-    }, 500);
+    } else {
+      // Otherwise wait a bit to see if data comes in
+      setTimeout(() => {
+        initialLoad = false;
+      }, 100);
+    }
     
     // Track user interaction
     const trackInteraction = () => {
@@ -116,7 +124,7 @@
   }
 </style>
 
-{#if !isLoading && roms.length === 0}
+{#if !isLoading && !initialLoad && roms.length === 0}
   <div class="mt-8 text-center" in:fade={{ duration: 300 }}>
     <p class="text-lg text-muted-foreground">No ROM hacks found</p>
   </div>
