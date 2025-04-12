@@ -174,7 +174,7 @@ export async function searchRoms(
 
     const { data, count, error } = await supabaseQuery
       .range(from, to)
-      .order('date_updated', { ascending: false });
+      .order('name', { ascending: true });
 
     if (error) {
       console.error('Error fetching ROMs:', error);
