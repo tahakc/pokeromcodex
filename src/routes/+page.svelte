@@ -44,7 +44,7 @@
   $effect(() => {
     isNavigating = !!$navigating;
   });
-  
+
   // Reset page when URL changes to root without page parameter
   $effect(() => {
     if ($page.url.pathname === '/' && !$page.url.searchParams.has('page') && currentPage !== 1) {
@@ -56,11 +56,11 @@
   // Function to preload the first image for better LCP performance
   function preloadFirstImage() {
     if (!browser || preloadedFirstImage || !filteredRoms || !filteredRoms.length || !filteredRoms[0].image) return;
-    
+
     preloadedFirstImage = true;
     const firstImage = filteredRoms[0].image;
     const imageUrl = getOptimizedImageUrl(firstImage, 768);
-    
+
     // Create preload link
     const linkEl = document.createElement('link');
     linkEl.rel = 'preload';
@@ -68,7 +68,7 @@
     linkEl.href = imageUrl;
     linkEl.setAttribute('fetchpriority', 'high');
     document.head.appendChild(linkEl);
-    
+
     // Also try to prefetch with JavaScript
     const img = new Image();
     img.setAttribute('fetchpriority', 'high');
@@ -80,7 +80,7 @@
 
     // Preload first image immediately for better LCP
     preloadFirstImage();
-    
+
     // Set a flag to skip the initial search from the Search component
     // This prevents the double loading issue
     setTimeout(() => {
@@ -137,7 +137,7 @@
       if (filteredRoms.length > 0) {
         // Calculate the index of the first item on the next page
         const startIndex = (newPage - 1) * pageSize;
-        
+
         // Preload just the first image of the page we're navigating to
         if (filteredRoms[startIndex]?.image) {
           // Create image object with high priority
@@ -227,12 +227,15 @@
     {#if filteredRoms[0]?.image}
       <link rel="preload" href={getOptimizedImageUrl(filteredRoms[0].image, 768)} as="image" fetchpriority="high" />
     {/if}
-    
+
     <!-- Preload image for the next page to improve pagination experience -->
-    {#if currentPage < totalPages && filteredRoms[(currentPage * pageSize)] && filteredRoms[(currentPage * pageSize)]?.image}
-      <link rel="prefetch" href={getOptimizedImageUrl(filteredRoms[(currentPage * pageSize)].image, 768)} as="image" />
+    {#if currentPage < totalPages && filteredRoms[(currentPage * pageSize)]?.image}
+      {@const imageUrl = filteredRoms[(currentPage * pageSize)].image}
+      {#if imageUrl}
+        <link rel="prefetch" href={getOptimizedImageUrl(imageUrl, 768)} as="image" />
+      {/if}
     {/if}
-    
+
     <!-- Preconnect to Supabase storage for faster image loading -->
     <link rel="preconnect" href={PUBLIC_SUPABASE_URL} crossorigin="anonymous" />
     <!-- Preconnect to CDN to speed up image loading -->
