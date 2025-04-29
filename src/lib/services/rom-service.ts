@@ -249,52 +249,48 @@ export async function getFilterOptions(): Promise<{
   difficulties: string[];
   features: string[];
 }> {
-  if (filterOptionsCache) {
-    return filterOptionsCache;
+  // Use the generic request cache
+  const cacheKey = 'filterOptions';
+  const cachedData = getCachedData(cacheKey); // Uses requestCache
+
+  if (cachedData) {
+    // Check if cached data has the expected structure from the RPC
+    // The RPC returns keys like base_games, statuses, etc.
+    if (cachedData.base_games && cachedData.statuses && cachedData.difficulties && cachedData.features) {
+       // Transform the cached data keys for the return value
+       return {
+         baseGames: cachedData.base_games,
+         statuses: cachedData.statuses,
+         difficulties: cachedData.difficulties,
+         features: cachedData.features
+       };
+    } else {
+      // Log if cache structure is wrong and proceed to fetch
+      console.warn("Cached filter options have incorrect structure from RPC, fetching again.");
+      requestCache.delete(cacheKey); // Clear potentially invalid cache
+    }
   }
 
-  const { data, error } = await supabase
-    .from(TABLE_NAME)
-    .select('base_game, status, features');
+  const { data, error } = await supabase.rpc('get_distinct_filter_options');
 
-  if (error) {
-    console.error('Error fetching filter options:', error);
+  if (error || !data) { // Also check if RPC returned null data
+    console.error('Error fetching filter options via RPC:', error);
     return { baseGames: [], statuses: [], difficulties: [], features: [] };
   }
 
-  const baseGames = new Set<string>();
-  const statuses = new Set<string>();
-  const difficulties = new Set<string>();
-  const features = new Set<string>();
-
-  data.forEach(rom => {
-    if (rom.base_game && Array.isArray(rom.base_game)) {
-      rom.base_game.forEach((game: string) => baseGames.add(game));
-    }
-
-    if (rom.status && Array.isArray(rom.status)) {
-      rom.status.forEach((status: string) => statuses.add(status));
-    }
-
-    if (rom.features) {
-      if (rom.features.gameplay_difficulty && Array.isArray(rom.features.gameplay_difficulty)) {
-        rom.features.gameplay_difficulty.forEach((diff: string) => difficulties.add(diff));
-      }
-
-      if (rom.features.qol && Array.isArray(rom.features.qol)) {
-        rom.features.qol.forEach((qol: string) => features.add(qol));
-      }
-    }
-  });
-
-  filterOptionsCache = {
-    baseGames: Array.from(baseGames),
-    statuses: Array.from(statuses),
-    difficulties: Array.from(difficulties),
-    features: Array.from(features)
+  // Ensure the data structure from RPC is as expected before caching and returning
+  // and transform the keys for the return value
+  const result = {
+      baseGames: data.base_games && Array.isArray(data.base_games) ? data.base_games : [],
+      statuses: data.statuses && Array.isArray(data.statuses) ? data.statuses : [],
+      difficulties: data.difficulties && Array.isArray(data.difficulties) ? data.difficulties : [],
+      features: data.features && Array.isArray(data.features) ? data.features : []
   };
 
-  return filterOptionsCache;
+  // Cache the raw result from the RPC function using the generic cache setter
+  setCachedData(cacheKey, data);
+
+  return result;
 }
 
 export async function getRomBySlug(slug: string): Promise<Rom | null> {

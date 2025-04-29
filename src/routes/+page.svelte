@@ -45,11 +45,13 @@
     isNavigating = !!$navigating;
   });
 
-  // Reset page when URL changes to root without page parameter
+  // Reset internal currentPage state ONLY if the URL truly represents page 1
   $effect(() => {
-    if ($page.url.pathname === '/' && !$page.url.searchParams.has('page') && currentPage !== 1) {
-      // Reset to page 1 when navigating to home without page parameter
-      currentPage = 1;
+    const urlPage = $page.url.searchParams.get('page');
+    const targetPage = urlPage ? parseInt(urlPage, 10) : 1;
+    // Sync internal state if URL changes page number
+    if (currentPage !== targetPage) {
+       currentPage = targetPage;
     }
   });
 

@@ -104,40 +104,29 @@
   });
 
   async function performSearch() {
-    if (isInitialLoad || !hasInteracted) {
-      try {
-        const { data, count } = await searchRoms(
-          searchQuery,
-          selectedFilters,
-          currentPage,
-          pageSize
-        );
+    // Determine the correct page number for the API call
+    // If a search query is active, always search from page 1
+    // Otherwise, use the current page (which might have been restored after clearing search)
+    const pageForSearch = searchQuery ? 1 : currentPage;
 
-        onSearch(data, count);
-      } catch (error) {
-        console.error('Error performing search:', error);
-        onSearch([], 0);
-      }
-      return;
-    }
-
-    if (loading) return;
+    if (loading) return; // Prevent concurrent searches
 
     loading = true;
     onLoadingChange(true);
 
     try {
+      // Use pageForSearch for the API call
       const { data, count } = await searchRoms(
         searchQuery,
         selectedFilters,
-        currentPage,
+        pageForSearch, // Use the calculated page number
         pageSize
       );
 
       onSearch(data, count);
     } catch (error) {
       console.error('Error performing search:', error);
-      onSearch([], 0);
+      onSearch([], 0); // Return empty results on error
     } finally {
       loading = false;
       onLoadingChange(false);
@@ -187,63 +176,89 @@
     }
 
     searchTimeout = setTimeout(async () => {
-      const url = new URL(window.location.href);
-      const currentUrl = new URL(window.location.href);
-      let urlChanged = false;
+      // Start building the target URL based on the *current* browser URL
+      const targetUrl = new URL(window.location.href);
+      let needsNavigation = false; // Flag to track if goto is needed
 
-      // Store the page before a new search
+      // --- State updates based on query change ---
       if (searchQuery !== lastSearchQuery) {
         if (searchQuery && !lastSearchQuery) {
-          // Starting a new search
+          // Starting a search: store page, reset to 1
           pageBeforeSearch = currentPage;
           currentPage = 1;
         } else if (!searchQuery && lastSearchQuery) {
-          // Clearing the search
+          // Clearing a search: restore page
           currentPage = pageBeforeSearch || 1;
           pageBeforeSearch = null;
         }
         lastSearchQuery = searchQuery;
-        urlChanged = true;
+        // Query change implies state change, might need navigation
+        needsNavigation = true;
       }
 
+      // --- Update URL parameters based on current state ---
+
+      // 1. Update 'q' parameter
+      const currentQ = targetUrl.searchParams.get('q');
       if (searchQuery) {
-        if (currentUrl.searchParams.get('q') !== searchQuery) {
-          url.searchParams.set('q', searchQuery);
-          urlChanged = true;
+        if (currentQ !== searchQuery) {
+          targetUrl.searchParams.set('q', searchQuery);
+          needsNavigation = true;
         }
-      } else {
-        if (currentUrl.searchParams.has('q')) {
-          url.searchParams.delete('q');
-          urlChanged = true;
+      } else { // No search query
+        if (currentQ !== null) { // Check if 'q' exists
+          targetUrl.searchParams.delete('q');
+          needsNavigation = true;
         }
       }
 
+      // 2. Update filter parameters
       Object.entries(selectedFilters).forEach(([key, values]) => {
-        const currentValues = currentUrl.searchParams.get(key)?.split(',').filter(Boolean) || [];
-        if (values.length > 0) {
-          if (JSON.stringify(values) !== JSON.stringify(currentValues)) {
-            url.searchParams.set(key, values.join(','));
-            urlChanged = true;
+        const currentValuesStr = targetUrl.searchParams.get(key);
+        const newValuesStr = values.length > 0 ? values.join(',') : null;
+
+        if (newValuesStr) { // If there are selected values for this filter
+          if (currentValuesStr !== newValuesStr) {
+            targetUrl.searchParams.set(key, newValuesStr);
+            needsNavigation = true;
           }
-        } else if (currentValues.length > 0) {
-          url.searchParams.delete(key);
-          urlChanged = true;
+        } else { // No selected values for this filter
+          if (currentValuesStr !== null) { // Check if the parameter exists
+            targetUrl.searchParams.delete(key);
+            needsNavigation = true;
+          }
         }
       });
 
-      // Update page parameter
-      if (currentPage !== 1) {
-        url.searchParams.set('page', String(currentPage));
-      } else {
-        url.searchParams.delete('page');
+      // 3. Update page parameter
+      const currentPageParam = targetUrl.searchParams.get('page');
+      const currentPageInUrl = currentPageParam ? parseInt(currentPageParam, 10) : 1;
+
+      if (currentPage !== 1) { // Target is not page 1
+        if (currentPageInUrl !== currentPage) {
+           targetUrl.searchParams.set('page', String(currentPage));
+           needsNavigation = true;
+        }
+      } else { // Target is page 1
+         if (currentPageInUrl !== 1) {
+            targetUrl.searchParams.delete('page');
+            needsNavigation = true;
+         }
       }
 
-      if (urlChanged) {
-        await goto(url, { keepFocus: true });
+      // --- Perform navigation only if needed ---
+      if (needsNavigation) {
+         // Double-check: Only navigate if the final target URL string
+         // is actually different from the current browser URL string.
+         // This prevents unnecessary history entries if changes cancel out.
+         if (targetUrl.toString() !== window.location.href) {
+            await goto(targetUrl, { keepFocus: true, replaceState: true }); // Use replaceState to avoid excessive history
+         }
       }
 
+      // --- Perform the search with the correct page number ---
       await performSearch();
-    }, 300);
+    }, 300); // Keep debounce time
   }
 
   $: if (searchQuery !== undefined && browser && !isInitialLoad) setupSearchDebounce();
@@ -275,12 +290,12 @@
     };
 
     const url = new URL(window.location.href);
-    
+
     // Remove all filter parameters but keep search query and pagination
     Array.from(url.searchParams.keys())
       .filter(key => Object.keys(selectedFilters).includes(key))
       .forEach(key => url.searchParams.delete(key));
-      
+
     // Navigate and search (keepFocus maintains user's current input focus)
     goto(url, { keepFocus: true }).then(() => performSearch());
   }
