@@ -8,39 +8,39 @@
   import { quintOut } from "svelte/easing";
   import { isAnyModalOpen } from "$lib/stores/modal";
   import UserDropdown from "$lib/components/auth/user-dropdown.svelte";
-  
+
   import GithubIcon from '~icons/mdi/github';
   import RedditIcon from '~icons/mdi/reddit';
   import DiscordIcon from '~icons/fa-brands/discord';
-  
+
   let open = false;
-  
+
   $: $isAnyModalOpen = open;
-  
+
   const inTransitionConfig = {
     x: "100%",
     duration: 300,
     easing: quintOut
   };
-  
+
   const outTransitionConfig = {
     x: "100%",
     duration: 250,
     easing: quintOut
   };
-  
+
   const navItems = [
     { href: "/", label: "Browse" },
     { href: "/faq", label: "FAQ" },
     { href: "/about", label: "About" }
   ];
-  
+
   const socialLinks = [
     { href: "https://github.com/tahakc/pokeromcodex", icon: GithubIcon, label: "GitHub" },
     { href: "https://www.reddit.com/r/PokemonROMhacks/", icon: RedditIcon, label: "Reddit" },
     { href: "https://discord.gg/aHXzsHXz2b", icon: DiscordIcon, label: "Discord" }
   ];
-  
+
   function closeSheet() {
     open = false;
   }
@@ -52,7 +52,7 @@
       <a href="/" class="mr-6 flex items-center space-x-2">
         <span class="font-bold">PokeRomCodex</span>
       </a>
-      
+
       <nav class="hidden md:flex items-center space-x-6 text-sm font-medium">
         {#each navItems as item}
           <a
@@ -67,7 +67,7 @@
         {/each}
       </nav>
     </div>
-    
+
     <div class="flex items-center space-x-2">
       <div class="hidden md:flex items-center space-x-1">
         {#each socialLinks as link}
@@ -82,18 +82,20 @@
           </a>
         {/each}
       </div>
-      
-      
-      {#if $page?.data?.session}
-        <UserDropdown />
-      {:else}
-        <a href="/auth">
-          <Button variant="outline" size="sm">
-            Sign In
-          </Button>
-        </a>
-      {/if}
-      
+
+      <!-- Wrapper div to reserve space for auth elements -->
+      <div class="flex items-center min-w-[100px] h-9 justify-end">
+        {#if $page?.data?.session}
+          <UserDropdown />
+        {:else}
+          <a href="/auth">
+            <Button variant="outline" size="sm">
+              Sign In
+            </Button>
+          </a>
+        {/if}
+      </div>
+
       <div class="flex md:hidden">
         <Sheet bind:open>
           <SheetTrigger>
@@ -102,8 +104,8 @@
               <span class="sr-only">Toggle menu</span>
             </Button>
           </SheetTrigger>
-          <SheetContent 
-            side="right" 
+          <SheetContent
+            side="right"
             inTransition={fly}
             inTransitionConfig={inTransitionConfig}
             outTransition={fly}
@@ -123,7 +125,7 @@
                   {item.label}
                 </a>
               {/each}
-              
+
               {#if $page.data.session}
                 <a
                   href="/profile"
@@ -146,7 +148,7 @@
                   Sign In
                 </a>
               {/if}
-              
+
               <div class="flex items-center gap-2 mt-4 pt-4 border-t">
                 {#each socialLinks as link}
                   <a
@@ -167,4 +169,4 @@
       </div>
     </div>
   </div>
-</header> 
+</header>
