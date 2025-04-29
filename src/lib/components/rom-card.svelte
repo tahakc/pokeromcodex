@@ -16,16 +16,16 @@
   $: formattedDate = rom.date_updated && !rom.isLoading
     ? format(parse(rom.date_updated, "yyyy/MM/dd", new Date()), "MMM d, yyyy")
     : "Date unknown";
-    
+
   $: difficultyLevels = rom?.features?.gameplay_difficulty || [];
-  
+
   // Track image loading state
   let imageLoaded = false;
-  
+
   function handleImageLoaded() {
     imageLoaded = true;
   }
-  
+
   // Reset loading state when rom changes
   $: if (rom) {
     imageLoaded = false;
@@ -70,7 +70,7 @@
               alt={rom.name}
               class={`absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105${priority ? ' lcp-image' : ''}`}
               loading={priority || index === 0 ? "eager" : "lazy"}
-              decoding={priority || index === 0 ? "sync" : "async"}
+              decoding={priority || index === 0 ? "async" : "async"}
               fetchpriority={priority || index === 0 ? "high" : "auto"}
               on:load={handleImageLoaded}
               width={imageDims.width}
@@ -101,10 +101,10 @@
               {rom.name}
             </h3>
           </a>
-          <CollectionButton 
-            romId={rom.id} 
-            isInCollection={rom.isInCollection === true} 
-            variant="ghost" 
+          <CollectionButton
+            romId={rom.id}
+            isInCollection={rom.isInCollection === true}
+            variant="ghost"
             size="icon"
             buttonClass="ml-auto"
           />
