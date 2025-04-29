@@ -83,8 +83,8 @@
         {/each}
       </div>
 
-      <!-- Wrapper div to reserve space for auth elements -->
-      <div class="flex items-center min-w-[100px] h-9 justify-end">
+      <!-- Wrapper div for auth elements -->
+      <div class="flex items-center h-9 justify-end">
         {#if $page?.data?.session}
           <UserDropdown />
         {:else}

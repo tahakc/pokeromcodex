@@ -259,7 +259,6 @@
     <div class="py-12 sm:py-16 lg:pb-40">
       <div class="mx-auto max-w-7xl px-6 lg:px-8">
         <div
-          in:fade={{ duration: 500 }}
           class="mx-auto max-w-2xl text-center"
         >
           <h1 class="text-4xl font-bold tracking-tight sm:text-6xl">
@@ -273,8 +272,7 @@
         </div>
 
         <div
-          in:fly={{ y: 20, duration: 500, delay: 200 }}
-          class="mx-auto mt-16 max-w-2xl sm:mt-20"
+          class="mx-auto mt-16 max-w-2xl sm:mt-20 min-h-[150px]"
         >
           <Search
             onSearch={handleSearch}
@@ -296,7 +294,6 @@
   </div>
 
   <div
-    in:fade={{ duration: 500, delay: 400 }}
     class="relative z-10 mx-auto max-w-7xl px-6 lg:px-8 mt-8"
   >
     {#if error}

@@ -35,8 +35,10 @@ function getCachedData(cacheKey: string) {
   clearExpiredCache();
   const cachedData = requestCache.get(cacheKey);
   if (cachedData && Date.now() - cachedData.timestamp < CACHE_TTL) {
+    console.log(`[Cache HIT] Key: ${cacheKey}`);
     return cachedData.data;
   }
+  console.log(`[Cache MISS] Key: ${cacheKey}`);
   return null;
 }
 
@@ -45,6 +47,7 @@ function setCachedData(cacheKey: string, data: any) {
     data,
     timestamp: Date.now(),
   });
+  console.log(`[Cache SET] Key: ${cacheKey}`);
 }
 
 function formatVersion(version: string): string {
