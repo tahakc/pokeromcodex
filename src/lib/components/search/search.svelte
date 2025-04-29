@@ -317,7 +317,7 @@
   {#if showFilters}
     <div
       transition:slide={{ duration: 200 }}
-      class="overflow-hidden rounded-lg border bg-card p-4 shadow-sm"
+      class="overflow-hidden rounded-lg border bg-card p-4 shadow-sm min-h-[100px]"
     >
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-sm font-medium text-muted-foreground">Filters</h3>

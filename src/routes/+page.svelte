@@ -384,11 +384,14 @@
         </div>
       </div>
 
-      {#if layoutMode === 'grid'}
-        <RomGrid roms={filteredRoms} {isLoading} isPriority={!isLoading && filteredRoms.length > 0} />
-      {:else}
-        <RomListView roms={filteredRoms.map((rom: Rom & { slug: string }) => ({ ...rom, slug: rom.slug }))} {isLoading} isPriority={!isLoading && filteredRoms.length > 0} />
-      {/if}
+      <!-- Add min-height to the container holding the grid/list -->
+      <div class="min-h-screen">
+        {#if layoutMode === 'grid'}
+          <RomGrid roms={filteredRoms} {isLoading} isPriority={!isLoading && filteredRoms.length > 0} />
+        {:else}
+          <RomListView roms={filteredRoms.map((rom: Rom & { slug: string }) => ({ ...rom, slug: rom.slug }))} {isLoading} isPriority={!isLoading && filteredRoms.length > 0} />
+        {/if}
+      </div>
 
       {#if totalPages > 1}
         <div class="my-8 flex justify-center">
