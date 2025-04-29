@@ -139,9 +139,12 @@ export async function searchRoms(
       return result;
     }
 
+    // Specify columns needed for list/grid view
+    const selectColumns = 'id, slug, name, image, author, base_game, status, version, features, date_updated';
+
     let supabaseQuery = supabase
       .from(TABLE_NAME)
-      .select('*', { count: 'exact' });
+      .select(selectColumns, { count: 'exact' });
 
     // Search terms use OR logic internally (name OR author)
     if (query && query.trim() !== '') {
